@@ -1,0 +1,3 @@
+# ql : Show a "Quick Look" view of files
+ql () { /usr/bin/qlmanage -p "$@" >& /dev/null & }
+# vim:ft=zsh

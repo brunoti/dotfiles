@@ -1,7 +1,12 @@
-if test ! $(which spoof)
+if test ! $(which yarn)
 then
   if test $(which npm)
   then
-    sudo npm install spoof -g
+    echo "node: installing...";
+    npm install yarn -g
+    echo "node: installed!";
+    echo "";
+  else
+    echo "node: already installed, skipping...";
   fi
 fi

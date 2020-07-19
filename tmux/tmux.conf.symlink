@@ -1,0 +1,51 @@
+source-file ~/.tmux.colors.conf
+
+unbind-key C-b
+set-option -g prefix C-a
+bind C-a send-prefix
+
+# Remove delay on pressing ESC
+set -s escape-time 0
+
+# True colors on tmux
+set -g default-terminal "xterm-256color"
+set -ga terminal-overrides ",xterm-256color:Tc"
+
+# New window, same folder
+bind c new-window -c "#{pane_current_path}"
+bind c new-session -c "#{pane_current_path}"
+
+bind-key Escape copy-mode
+bind-key p paste-buffer
+
+bind-key -T copy-mode-vi Escape send -X cancel
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+bind-key -T copy-mode-vi 'V' send -X select-line
+bind-key -T copy-mode-vi 'r' send -X rectangle-toggle
+bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
+
+# use <prefix> s for horizontal split
+bind s split-window -v
+# use <prefix> v for vertical split
+bind v split-window -h
+
+# resize panes more easily
+bind < resize-pane -L 10
+bind > resize-pane -R 9
+bind - resize-pane -D 10
+bind + resize-pane -U 10
+
+set-window-option -g mode-keys vi
+set -g base-index 1
+set -g status-keys vi
+set -g history-limit 10000
+
+set-window-option -g automatic-rename off
+set-option -g set-titles off
+
+bind -n M-l select-pane -L
+bind -n M-h select-pane -R
+bind -n M-k select-pane -U
+bind -n M-j select-pane -D
+
+# vim:ft=tmux
