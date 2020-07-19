@@ -1,0 +1,5 @@
+[user]
+        name = Bruno Oliveira
+        email = brunohdbass@gmail.com
+[credential]
+        helper = osxkeychain
