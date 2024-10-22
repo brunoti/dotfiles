@@ -13,6 +13,9 @@ install_casks() {
     "librewolf"
     "bitwarden"
     "brave-browser"
+    "karabiner-elements"
+    "alt-tab"
+    "rectangle"
     "arc"
   )
 

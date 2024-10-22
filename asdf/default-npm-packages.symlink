@@ -2,3 +2,5 @@ pnpm
 typescript
 @biomejs/biome
 yarn
+trash-cli
+delete-cli

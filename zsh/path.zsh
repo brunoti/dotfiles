@@ -1,2 +1,3 @@
 export PATH="$HOME/.config/homebrew/bin:$PATH"
-export PATH="$PATH:$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.asdf/shims:$PATH"

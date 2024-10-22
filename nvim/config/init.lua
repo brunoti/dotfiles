@@ -150,9 +150,9 @@ vim.cmd [[
   autocmd FileType cabal setlocal shiftwidth=4
 ]]
 
-vim.opt.undodir = "~/.config/nvim/.undo"
-vim.opt.backupdir = "~/.config/nvim/.backup"
-vim.opt.directory = "~/.config/nvim/.swp"
+vim.opt.undodir = os.getenv("HOME") .. "/.config/nvim/.undo"
+vim.opt.backupdir = os.getenv("HOME") .. "/.config/nvim/.backup"
+vim.opt.directory = os.getenv("HOME") .. "/.config/nvim/.swp"
 vim.opt.undofile = true
 
 vim.cmd "set mouse="
