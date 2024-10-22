@@ -1,6 +1,5 @@
 # shortcut to this dotfiles path is $DOTFILES
 export DOTFILES=$HOME/.dotfiles
-export ZSH=$HOME/.oh-my-zsh
 
 # your project folder that we can `c [tab]` to
 export PROJECTS=~/Projects
@@ -47,16 +46,18 @@ autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-bindkey "^[[A" up-line-or-beginning-search # Up
-bindkey "^[[B" down-line-or-beginning-search # Down
 
-# Pure theme
-autoload -U promptinit; promptinit
-zstyle :prompt:pure:git:branch color green
-prompt pure
 
 # Attach to tmux default session
-if [ -z "$TMUX" ]
-then
-  tmux attach -t default || tmux new -s default
-fi
+# if [ -z "$TMUX" ]
+# then
+#   tmux attach -t default || tmux new -s default
+# fi
+
+export TERM="screen-256color"
+
+bindkey -v
+bindkey "^[M" accept-line
+bindkey "^B" backward-word
+bindkey "^N" forward-word
+bindkey "^R" history-incremental-search-backward

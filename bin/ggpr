@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+if [ $# -eq 0 ]; then
+  echo "Missing branch name. Usage: ggpr <branch_name>"
+  exit
+else
+  BRANCH=$1
+  shift
+fi
+
+git_current_branch() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || ref=$(git rev-parse --short HEAD 2> /dev/null) || return
+  echo ${ref#refs/heads/}
+}
+
+# push to origin first
+git push origin $(git_current_branch)
+gh pr create --fill --base $BRANCH --title "$(git_current_branch) → $BRANCH" --body "" $@

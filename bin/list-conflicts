@@ -1,0 +1,40 @@
+#!/bin/bash
+files=$(git ls-files | sort -u | grep -v -E "(^.*\.(zip|lock|pnp\.js)$|\.yarn|\.idea)")
+tokens=("^=======$" "^<<<<<<<$" "^>>>>>>>$")
+
+typeset -a conflicted_files
+conflicted_files=()
+
+function get_conflicted_files() {
+  for file in $files
+  do
+    cmds=()
+
+    for token in "${tokens[@]}"
+    do
+      cmds+=("ag \""${token}"\" -l --no-color ${file}")
+    done;
+
+    for cmd in "${cmds[@]}"
+    do
+      result=$(eval $cmd)
+      if [ $result ]
+      then
+        conflicted_files[${#conflicted_files[@]}]="${file}";
+      fi;
+    done;
+  done;
+}
+
+function print_files() {
+  for conflict in "${conflicted_files[@]}"
+  do
+    echo $conflict
+  done;
+}
+
+get_conflicted_files
+print_files | sort -u
+
+
+# vim:ft=bash

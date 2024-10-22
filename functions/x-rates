@@ -1,0 +1,11 @@
+x-rates () {
+	VALUE=19583.33
+	if [ -n "$1" ]
+	then
+		VALUE=$1
+  fi
+
+	curl -s "https://www.x-rates.com/calculator/?from=BRL&to=USD&amount=${VALUE}" | cheerio -o text ".ccOutputRslt" | sed "s/ USD//" | sed "s/,//" | numeral -f " .00"
+}
+
+# vim:ft=bash

@@ -1,0 +1,18 @@
+{
+	"Log to the console": {
+		"prefix": "c",
+		"body": [
+			"console.log($1);",
+			"$0"
+		],
+		"description": "Log to the console"
+	},
+	"Log to the console with prefix": {
+		"prefix": "cc",
+		"body": [
+			"console.log('$1', $1);",
+			"$0"
+		],
+		"description": "Log to the console with prefix"
+	}
+}

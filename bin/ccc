@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Check if no parameters are passed
+if [ $# -eq 0 ]; then
+  CMD="git commit --amend --no-edit"
+else
+  CMD="git commit -m \"$*\""
+fi
+
+git_current_branch() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || ref=$(git rev-parse --short HEAD 2> /dev/null) || return
+  echo ${ref#refs/heads/}
+}
+
+confirm_and_run() {
+  # Echo the command to be executed
+  echo ""
+  echo "Command to be executed: $@"
+  echo ""
+  read -p "Are you sure you want to execute this command? (y/n): " confirm
+  echo ""
+
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    # Execute the command if the user confirms with 'y' or 'yes'
+    "$@"
+  else
+    echo "Command not executed."
+  fi
+}
+
+biome check --unsafe --write
+tsc --noEmit && git add . && eval $CMD && confirm_and_run git push origin $(git_current_branch) --force

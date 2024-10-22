@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const arg = process.argv.slice(2)[0];
+
+console.log(arg.split("/").map(encodeURIComponent).join("/"));
+
+// vim:ft=javascript

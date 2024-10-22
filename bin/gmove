@@ -1,0 +1,8 @@
+#!/bin/sh
+
+find $1 -iname "*$2*" -type $([ -z "$4" ] && echo "f" || echo $4) | while read item; do
+	renamed=$(echo $item | sed -r "s/$2/$3/g");
+	echo "mv $item $renamed;";
+done
+
+# vim:ft=bash

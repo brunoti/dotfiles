@@ -16,7 +16,7 @@
         ui = true
 [core]
         excludesfile = ~/.gitignore
-        editor = vim
+	editor = nvim
 [apply]
         whitespace = nowarn
 [mergetool]
@@ -33,3 +33,15 @@
         default = simple
 [credential]
 	helper = osxkeychain
+[user]
+	name = bop
+	email = brunohdbass@gmail.com
+[rerere]
+	enabled = 1
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

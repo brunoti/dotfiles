@@ -1,8 +1,0 @@
-today () {
-  if [ -z $1 ]; then
-    echo "No file name passed!";
-    return 1
-  fi
-
-  e $(date "+%Y_%m_%d")_$1.txt;
-}

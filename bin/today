@@ -1,0 +1,22 @@
+#!/usr/bin/env bb
+(require '[babashka.process :refer [shell process exec]]
+         '[babashka.deps :as deps])
+
+(deps/add-deps '{:deps {cljc.java-time/cljc.java-time {:mvn/version "0.1.12"}}})
+
+(require '[cljc.java-time.local-date :refer [now format]]
+         '[cljc.java-time.format.date-time-formatter :refer [of-pattern]])
+
+(defn get-today []
+  (-> (now)
+      (format (of-pattern "yyyyMMdd"))))
+
+(defn today [args]
+  (let [name (first args)]
+    (if (empty? name)
+      (println "Usage: today <name>")
+      (exec "e" (str (get-today) "_" name ".txt")))))
+
+(today *command-line-args*)
+
+; vim:ft=clojure

@@ -1,0 +1,53 @@
+# extends javascript
+#
+# snippet simp "simplify stuff"
+# type ${2:A} = Simplify<$1>
+# endsnippet
+#
+# # related to zoetis project
+#
+# snippet fcs "component style file template"
+# import { createStyles } from '@mantine/core'
+#
+# export const useStyles = createStyles(theme => ({$0}))
+# endsnippet
+#
+# snippet fct "component type file template"
+# export type `!p snip.rv = snip.fn.split(".")[0]`Props = {}
+# endsnippet
+#
+# snippet fcc "component type file template"
+# import { useStyles } from './`!p snip.rv = snip.fn.split(".")[0]`.styles'
+# import { `!p snip.rv = snip.fn.split(".")[0]`Props } from './`!p snip.rv = snip.fn.split(".")[0]`.types'
+#
+# export function `!p snip.rv = snip.fn.split(".")[0]`(${1:props}: `!p snip.rv = snip.fn.split(".")[0]`Props) {
+# 	const { classes } = useStyles()
+# 	return (
+# 		$0
+# 	)
+# }
+# endsnippet
+#
+# snippet fce "component export file template"
+# export * from './`!p snip.rv = path.split("/")[-2]`'
+# export * from './`!p snip.rv = path.split("/")[-2]`.types'
+# endsnippet
+#
+# snippet fc "component"
+# export function `!p snip.rv = snip.fn.split(".")[0]`() {
+# 	return (
+# 		$0
+# 	)
+# }
+# endsnippet
+#
+# snippet fn "function"
+# function ${1:`!p snip.rv = snip.fn.split(".")[0]`}() {
+# 	$0
+# }
+# endsnippet
+#
+# snippet aaa "aaa"
+# export const use`!p snip.rv = snip.fn.split(".")[0][0].upper() + snip.fn.split(".")[0][1:].replace("Slice", "")`Actions = () => useActions(`!p snip.rv = snip.fn.split(".")[0]`.actions)
+# export const use`!p snip.rv = snip.fn.split(".")[0][0].upper() + snip.fn.split(".")[0][1:].replace("Slice", "")`Query = () => useChartQueryData(`!p snip.rv = snip.fn.split(".")[0]`.name)
+# endsnippet

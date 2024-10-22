@@ -1,0 +1,20 @@
+{
+	"Interface Definition": {
+		"prefix": "iface",
+		"body": [
+			"interface ${1:name} {",
+			"\t$0",
+			"}"
+		],
+		"description": "Interface Definition"
+	},
+	"Function Statement": {
+		"prefix": "fn",
+		"body": [
+			"function ${1:name}(${2:params}:${3:type}) {",
+			"\t$0",
+			"}"
+		],
+		"description": "Function Statement"
+	}
+}

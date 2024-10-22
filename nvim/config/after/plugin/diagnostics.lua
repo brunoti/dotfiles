@@ -1,0 +1,137 @@
+-- local mapping = require('utils.mapping')
+-- local normal_map = mapping.normal_map
+-- local visual_map = mapping.visual_map
+-- local insert_map = mapping.insert_map
+--
+-- mapping.map('', '<space>', '<nop>')
+-- vim.g.mapleader = ' '
+-- vim.g.maplocalleader = ' '
+--
+-- normal_map(']d', '<Plug>(coc-diagnostic-next)', { noremap = false })
+-- normal_map('[d', '<Plug>(coc-diagnostic-prev)', { noremap = false })
+-- normal_map('<leader>gd', '<Plug>(coc-definition)', { noremap = false })
+-- normal_map('<leader>rn', '<Plug>(coc-rename)', { noremap = false })
+-- normal_map('<leader>s', '<Plug>(coc-format-select)', { noremap = false })
+-- visual_map('<leader>s', '<Plug>(coc-format-select)', { noremap = false })
+-- normal_map('<leader>aa', '<Plug>(coc-codeaction-selected)', { noremap = false })
+-- visual_map('<leader>aa', '<Plug>(coc-codeaction-selected)', { noremap = false })
+-- normal_map('<leader>ac', '<Plug>(coc-codeaction)', { noremap = false })
+-- normal_map('<leader>al', '<Plug>(coc-codelens-action)', { noremap = false })
+-- normal_map('<leader>qf', '<Plug>(coc-fix-current)', { noremap = false })
+--
+-- normal_map('<leader>cl', ':CocList ', { noremap = false })
+-- normal_map('<leader>cy', ':<C-u>CocList -A --normal yank<cr>', { noremap = false })
+--
+-- vim.g.coc_borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└' }
+-- vim.g.coc_border_joinchars = { '┬', '┤', '┴', '├' }
+--
+--
+-- vim.cmd [[
+--   function! s:check_back_space() abort
+--     let col = col('.') - 1
+--     return !col || getline('.')[col - 1]  =~# '\s'
+--   endfunction
+--
+--   " Insert <tab> when previous text is space, refresh completion if not.
+--   inoremap <silent><expr> <TAB>
+-- 	\ coc#pum#visible() ? coc#pum#next(1):
+-- 	\ <SID>check_back_space() ? "\<Tab>" :
+-- 	\ coc#refresh()
+--
+--   inoremap <silent><expr> <CR> coc#pum#visible() ? coc#_select_confirm()
+-- 				\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+-- ]]
+--
+-- -- Use <c-space> to trigger completion.
+-- vim.cmd [[ inoremap <silent><expr> <c-space> coc#refresh() ]]
+--
+-- -- Do default action for next item.
+-- vim.cmd [[
+-- nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+-- " Do default action for previous item.
+-- nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+-- ]]
+--
+-- -- Remap <C-f> and <C-b> for scroll float windows/popups.
+-- vim.cmd [[
+-- nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+-- nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+-- inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+-- inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+-- vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+-- vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+-- ]]
+--
+-- -- add format command
+-- vim.cmd [[ command! -nargs=0 Format :call CocActionAsync('format') ]]
+--
+-- -- text objects from lsp
+-- vim.cmd [[
+-- xmap if <Plug>(coc-funcobj-i)
+-- omap if <Plug>(coc-funcobj-i)
+-- xmap af <Plug>(coc-funcobj-a)
+-- omap af <Plug>(coc-funcobj-a)
+-- xmap ic <Plug>(coc-classobj-i)
+-- omap ic <Plug>(coc-classobj-i)
+-- xmap ac <Plug>(coc-classobj-a)
+-- omap ac <Plug>(coc-classobj-a)
+-- ]]
+--
+-- -- Use K to show documentation in preview window.
+-- vim.cmd [[ 
+-- nnoremap <silent> K :call ShowDocumentation()<CR>
+-- function! ShowDocumentation()
+-- 	if CocAction('hasProvider', 'hover')
+-- 		call CocActionAsync('doHover')
+-- 	else
+-- 	  call feedkeys('K', 'in')
+-- 	endif
+-- endfunction
+-- ]]
+--
+-- vim.cmd [[ autocmd CursorHold * silent call CocActionAsync('highlight') ]]
+--
+-- vim.cmd [[
+-- augroup mygroup
+--   autocmd!
+--   " Setup formatexpr specified filetype(s).
+--   autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+--   " Update signature help on jump placeholder.
+--   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+-- augroup end
+-- ]]
+--
+-- -- Use <C-l> for trigger snippet expand.
+-- insert_map('<C-k>', '<Plug>(coc-snippets-expand-jump)', { noremap = false })
+--
+-- -- Use <C-j> for select text for visual placeholder of snippet.
+-- visual_map('<C-j>', '<Plug>(coc-snippets-select)', { noremap = false })
+--
+-- -- Use <C-j> for jump to next placeholder, it's default of coc.nvim
+-- vim.g.coc_snippet_next = '<c-k>'
+-- -- Use <C-k> for jump to previous placeholder, it's default of coc.nvim
+-- vim.g.coc_snippet_prev = '<c-j>'
+--
+-- -- Use <leader>x for convert visual selected code to snippet
+-- visual_map('<leader>bx', '<Plug>(coc-convert-snippet)', { noremap = true })
+--
+-- -- remove
+-- vim.g.coc_disable_transparent_cursor = 1
+-- vim.cmd [[ let g:coc_disable_transparent_cursor = 1]]
+-- vim.cmd [[ autocmd BufWritePost * execute 'silent! call CocAction("format") | write' ]]
+-- vim.cmd [[ autocmd BufWritePost *.clj,*.cljc,*.cljs execute 'silent! !joker --format --write %' ]]
+--
+-- -- jest
+-- vim.cmd [[
+-- " Run jest for current project
+-- command! -nargs=0 Jest :call  CocAction('runCommand', 'jest.projectTest')
+--
+-- " Run jest for current file
+-- command! -nargs=0 JestCurrent :call  CocAction('runCommand', 'jest.fileTest', ['%'])
+--
+-- " Run jest for current test
+-- nnoremap <leader>te :call CocAction('runCommand', 'jest.singleTest')<CR>
+--
+-- " Init jest in current cwd, require global jest command exists
+-- command! JestInit :call CocAction('runCommand', 'jest.init')
+-- ]]

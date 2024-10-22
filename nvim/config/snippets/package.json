@@ -1,0 +1,31 @@
+{
+	"name": "my snippets",
+	"contributes": {
+		"snippets": [
+			{
+				"language": [
+					"typescript",
+					"javascript",
+					"svelte"
+				],
+				"path": "./svelte.json"
+			},
+			{
+				"language": [
+					"typescriptreact",
+					"typescript"
+				],
+				"path": "./typescript.json"
+			},
+			{
+				"language": [
+					"typescript",
+					"javascript",
+					"typescriptreact",
+					"javascriptreact"
+				],
+				"path": "./javascript.json"
+			}
+		]
+	}
+}

@@ -1,0 +1,5 @@
+for i in *.flac; do
+  name=$(echo "${i%.*}")
+  echo "$name"
+  ffmpeg -i "$i" -write_id3v2 1 -c:v copy -acodec pcm_s16le -ar 44100 -ac 2 "${name}.aiff"
+done

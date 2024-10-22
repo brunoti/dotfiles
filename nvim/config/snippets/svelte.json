@@ -1,0 +1,13 @@
+	{
+		"SvelteKit Load Function": {
+			"prefix": "kit:load:ts",
+			"description": "Create a SvelteKit TypeScript Load function",
+			"body": [
+				"import type { PageLoad } from './\\$types';",
+				"",
+				"export const load: PageLoad = async ({}) => {",
+				"",
+				"}"
+			]
+		}
+	}
