@@ -46,6 +46,10 @@ local curry = setmetatable({}, {
 	__call = function(_, func)
 		return _curry(func)
 	end,
+	__newindex = function()
+		error("Attempt to modify immutable table", 2)
+	end,
+	__metatable = false,
 })
 
 return curry
