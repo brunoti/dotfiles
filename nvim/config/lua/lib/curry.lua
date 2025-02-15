@@ -51,6 +51,16 @@ local curry = setmetatable({}, {
 	__metatable = false,
 })
 
---- // make a function that i can use to make immutable tables AI!
+--- Creates an immutable table
+--- @param t table The table to make immutable
+--- @return table The immutable table
+local function immutable(t)
+  return setmetatable(t, {
+    __newindex = function()
+      error("Attempt to modify immutable table", 2)
+    end,
+    __metatable = false,
+  })
+end
 
 return curry
