@@ -41,7 +41,6 @@ local function _curry(func)
 	end
 
 
---- // make the following table	immutable. make it not possible to set or change props.	using the metamethods.	AI!
 local curry = setmetatable({}, {
 	__call = function(_, func)
 		return _curry(func)
@@ -51,5 +50,7 @@ local curry = setmetatable({}, {
 	end,
 	__metatable = false,
 })
+
+--- // make a function that i can use to make immutable tables AI!
 
 return curry
