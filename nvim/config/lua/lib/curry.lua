@@ -41,11 +41,11 @@ local function _curry(func)
 	end
 
 
---- // AI: make the following metatable immutable AI!
 local curry = setmetatable({}, {
 	__call = function(_, func)
 		return _curry(func)
-	end
+	end,
+	__metatable = "This metatable is locked",
 })
 
 return curry
