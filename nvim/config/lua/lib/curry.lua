@@ -41,11 +41,11 @@ local function _curry(func)
 	end
 
 
+--- // make the following table	immutable. make it not possible to set or change props.	AI!
 local curry = setmetatable({}, {
 	__call = function(_, func)
 		return _curry(func)
 	end,
-	__metatable = "This metatable is locked",
 })
 
 return curry
