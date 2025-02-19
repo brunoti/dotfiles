@@ -1,10 +1,24 @@
-local mapping = require 'utils.mapping'
-local nmap = mapping.nmap
+local open_with_trouble = require("trouble.sources.telescope").open
+
+-- -- Use this to add more results without clearing the trouble list
+-- local add_to_trouble = require("trouble.sources.telescope").add
 
 require('telescope').setup {
 	defaults = {
 		initial_mode = "normal",
-		borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└' }
+		borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+		mappings = {
+			n = {
+				['D'] = require('telescope.actions').delete_buffer,
+				["<c-t>"] = open_with_trouble,
+				["g?"] = "which_key"
+			},
+			i = {
+				["<c-t>"] = open_with_trouble,
+				["<C-h>"] = "which_key",
+				['<c-d>'] = require('telescope.actions').delete_buffer
+			},
+		},
 	},
 	extensions = {
 		media_files = {
@@ -25,13 +39,8 @@ require('telescope').setup {
 require('telescope').load_extension('media_files')
 require('telescope').load_extension('node_modules')
 require("telescope").load_extension("ui-select")
-
-
-mapping.map('', '<space>', '<nop>')
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
-
--- telescope mappings
-nmap('<leader>ff', '<cmd>Telescope find_files<cr>')
-nmap('<leader>fg', '<cmd>Telescope live_grep<cr>')
-nmap('<leader>fb', '<cmd>Telescope buffers<cr>')
+require("telescope").load_extension("recent-files")
+require("telescope").load_extension("telescope-tabs")
+require("telescope").load_extension("cmdline")
+require('telescope-tabs').setup()
+require("telescope").load_extension("workspaces")

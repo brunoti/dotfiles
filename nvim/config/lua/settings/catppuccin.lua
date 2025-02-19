@@ -16,7 +16,7 @@ return {
 				name = "catppuccin",
 				priority = 1000,
 				opts = {
-					term_colors = true,
+					-- term_colors = true,
 					transparent_background = false,
 					background = {
 						light = "latte",
@@ -35,15 +35,14 @@ return {
 						properties = {},
 						types = {},
 					},
-					-- color_overrides = {
-					-- 	mocha = {
-					-- 		base = "#000000",
-					-- 		mantle = "#000000",
-					-- 		crust = "#000000",
-					-- 	},
-					-- },
+					color_overrides = {
+					},
 					integrations = {
 						telescope = {
+							enabled = true,
+						},
+						which_key = true,
+						navic = {
 							enabled = true,
 						},
 						cmp = true,
@@ -66,8 +65,20 @@ return {
 							inlay_hints = {
 								background = true,
 							},
+
 						},
-						mason = true
+						noice = true,
+						snacks = true,
+						notify = true,
+						mini = {
+							enabled = true,
+							indentscope_color = "lavender",
+						},
+						lsp_saga = true,
+						diffview = true,
+						mason = true,
+						overseer = true,
+						neotest = true
 					},
 					init = function()
 						vim.cmd.colorscheme("catppuccin")

@@ -8,8 +8,7 @@ local _ = {}
 --- @generic T : fun(...): any
 --- @param func `T`
 --- @return `T`
----
-local function _curry(func)
+local function curry(func)
 	local args = {}
 
 	local function collect(...)
@@ -39,28 +38,5 @@ local function _curry(func)
 
 	return collect
 	end
-
-
-local curry = setmetatable({}, {
-	__call = function(_, func)
-		return _curry(func)
-	end,
-	__newindex = function()
-		error("Attempt to modify immutable table", 2)
-	end,
-	__metatable = false,
-})
-
---- Creates an immutable table
---- @param t table The table to make immutable
---- @return table The immutable table
-local function immutable(t)
-  return setmetatable(t, {
-    __newindex = function()
-      error("Attempt to modify immutable table", 2)
-    end,
-    __metatable = false,
-  })
-end
 
 return curry

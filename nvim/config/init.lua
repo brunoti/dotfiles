@@ -1,4 +1,3 @@
-local autocmd = require('utils.autocmd')
 local plugins = require('plugins')
 
 -- make it faster
@@ -17,6 +16,15 @@ vim.opt.writebackup = false
 vim.opt.swapfile = false
 -- don't write swap files after some number of updates
 vim.opt.updatecount = 0
+
+vim.o.exrc = true
+
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 1
+vim.opt.foldnestmax = 4
+vim.opt.statuscolumn = ""
 
 vim.opt.backupdir = {
 	"~/.vim-tmp",
@@ -111,7 +119,7 @@ vim.opt.showmatch = true
 -- how many tenths of a second to blink
 vim.opt.mat = 2
 vim.opt.updatetime = 300
-vim.opt.signcolumn = "yes"
+-- vim.opt.signcolumn = "yes"
 -- prompt message options
 vim.opt.shortmess = "atToOFc"
 
@@ -138,9 +146,6 @@ vim.cmd [[syntax on]]
 vim.cmd [[filetype plugin indent on]]
 
 -- set filetype to typescript always
-autocmd({ 'BufNewFile', 'BufRead' }, { '*.tsx', ':set filetype=typescriptreact' })
-autocmd({ 'BufNewFile', 'BufRead' }, { '*.js,*.jsx', ':set filetype=javascriptreact' })
-
 vim.cmd [[
   autocmd FileType haskell setlocal expandtab
   autocmd FileType haskell setlocal tabstop=4
@@ -155,7 +160,7 @@ vim.opt.backupdir = os.getenv("HOME") .. "/.config/nvim/.backup"
 vim.opt.directory = os.getenv("HOME") .. "/.config/nvim/.swp"
 vim.opt.undofile = true
 
-vim.cmd "set mouse="
+vim.cmd "set mouse=nvi"
 
 plugins.setup()
 
@@ -184,3 +189,22 @@ plugins.setup()
 -- 		restart_svelte_lsp()
 -- 	end
 -- end))
+
+if vim.g.neovide then
+	vim.o.guifont = "Iosevka Nerd Font Mono:h16" -- text below applies for VimScript
+	vim.opt.linespace = 5
+	vim.g.neovide_padding_top = 20
+	vim.g.neovide_cursor_animation_length = 0.13
+	vim.g.neovide_padding_bottom = 0
+	vim.g.neovide_padding_right = 20
+	vim.g.neovide_padding_left = 20
+	vim.g.neovide_floating_corner_radius = 0.0
+	vim.g.neovide_show_border = false
+	vim.g.neovide_position_animation_length = 0
+	vim.g.neovide_cursor_animation_length = 0.00
+	vim.g.neovide_cursor_trail_size = 0
+	vim.g.neovide_cursor_animate_in_insert_mode = false
+	vim.g.neovide_cursor_animate_command_line = false
+	vim.g.neovide_scroll_animation_far_lines = 0
+	vim.g.neovide_scroll_animation_length = 0.00
+end

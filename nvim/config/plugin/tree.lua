@@ -3,6 +3,12 @@ require('nvim-tree').setup({
 		adaptive_size = true,
 		width = 45,
 	},
+	renderer = {
+		highlight_diagnostics = "icon",
+	},
+	diagnostics = {
+		enable = true,
+	},
 	ui = {
 		confirm = {
 			remove = true,
@@ -15,6 +21,19 @@ require('nvim-tree').setup({
 			return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
 		end
 
+		local prev = { new_name = "", old_name = "" } -- Prevents duplicate events
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "NvimTreeSetup",
+			callback = function()
+				local events = require("nvim-tree.api").events
+				events.subscribe(events.Event.NodeRenamed, function(data)
+					if prev.new_name ~= data.new_name or prev.old_name ~= data.old_name then
+						data = data
+						Snacks.rename.on_rename_file(data.old_name, data.new_name)
+					end
+				end)
+			end,
+		})
 
 		-- Default mappings. Feel free to modify or remove as you wish.
 		--
@@ -161,5 +180,20 @@ require('nvim-tree').setup({
 		vim.keymap.set("n", "yy", mark_copy, opts("Copy File(s)"))
 
 		vim.keymap.set("n", "mv", api.marks.bulk.move, opts("Move Bookmarked"))
+
+		local prev = { new_name = "", old_name = "" } -- Prevents duplicate events
+
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "NvimTreeSetup",
+			callback = function()
+				local events = require("nvim-tree.api").events
+				events.subscribe(events.Event.NodeRenamed, function(data)
+					if prev.new_name ~= data.new_name or prev.old_name ~= data.old_name then
+						data = data
+						Snacks.rename.on_rename_file(data.old_name, data.new_name)
+					end
+				end)
+			end,
+		})
 	end,
 })
