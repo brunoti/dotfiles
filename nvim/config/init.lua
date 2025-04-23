@@ -1,4 +1,5 @@
 local plugins = require('plugins')
+local lib_vim = require('lib.vim')
 
 -- make it faster
 vim.opt.updatetime = 300
@@ -190,11 +191,16 @@ plugins.setup()
 -- 	end
 -- end))
 
+lib_vim.set_sign_text({ name = 'DiagnosticSignError', text = '' })
+lib_vim.set_sign_text({ name = 'DiagnosticSignWarn', text = '' })
+lib_vim.set_sign_text({ name = 'DiagnosticSignHint', text = '' })
+lib_vim.set_sign_text({ name = 'DiagnosticSignInfo', text = '' })
+
 if vim.g.neovide then
-	vim.o.guifont = "Iosevka Nerd Font Mono:h16" -- text below applies for VimScript
-	vim.opt.linespace = 5
+	vim.o.guifont = "Iosevka:h16" -- text below applies for VimScript
+	vim.opt.linespace = 0
 	vim.g.neovide_padding_top = 20
-	vim.g.neovide_cursor_animation_length = 0.13
+	vim.g.neovide_cursor_animation_length = 0
 	vim.g.neovide_padding_bottom = 0
 	vim.g.neovide_padding_right = 20
 	vim.g.neovide_padding_left = 20

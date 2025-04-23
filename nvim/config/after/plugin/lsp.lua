@@ -10,10 +10,21 @@ local formatters = require('format-on-save.formatters')
 
 local lsp_defaults = lspconfig.util.default_config
 
+
+local function get_capabilities()
+	local _, cmp = pcall(require, 'cmp_nvim_lsp')
+	local _, blink = pcall(require, 'blink.cmp')
+	if blink then return blink.get_lsp_capabilities() end
+	if cmp then return cmp.default_capabilities() end
+
+	return lsp_defaults.capabilities
+end
+
+
 local capabilities = vim.tbl_deep_extend(
 	'force',
 	lsp_defaults.capabilities,
-	require('cmp_nvim_lsp').default_capabilities()
+	get_capabilities()
 )
 local on_attach = function(client, bufnr)
 	-- require("workspace-diagnostics").populate_workspace_diagnostics(client, bufnr)
@@ -86,13 +97,12 @@ lspconfig.lua_ls.setup {
 }
 
 
-
 -- Use LspAttach autocommand to only map the following keys
 -- after the language server attaches to the current buffer
 
 -- Function to check if a floating dialog exists and if not
 -- then check for diagnostics under the cursor
-function OpenDiagnosticIfNoFloat()
+function _G.open_diagnostic_if_no_float()
 	for _, winid in pairs(vim.api.nvim_tabpage_list_wins(0)) do
 		if vim.api.nvim_win_get_config(winid).zindex then
 			return
@@ -116,10 +126,32 @@ end
 vim.api.nvim_create_augroup("lsp_diagnostics_hold", { clear = true })
 vim.api.nvim_create_autocmd({ "CursorHold" }, {
 	pattern = "*",
-	command = "lua OpenDiagnosticIfNoFloat()",
+	command = "lua open_diagnostic_if_no_float()",
 	group = "lsp_diagnostics_hold",
 })
 
+
+-- Show diagnostics under the cursor when holding position
+-- vim.api.nvim_create_augroup("lsp_diagnostics_hold", { clear = true })
+-- vim.api.nvim_create_autocmd({ "CursorHold" }, {
+-- 	pattern = "*",
+-- 	group = "lsp_diagnostics_hold",
+-- 	callback = function()
+-- 		vim.diagnostic.open_float(0, {
+-- 			scope = "cursor",
+-- 			focusable = false,
+-- 			close_events = {
+-- 				"CursorMoved",
+-- 				"CursorMovedI",
+-- 				"BufHidden",
+-- 				"InsertCharPre",
+-- 				"WinLeave",
+-- 			},
+-- 		})
+-- 	end,
+-- })
+
+vim.opt.updatetime = 300
 
 vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
 	vim.lsp.handlers.hover,
@@ -135,8 +167,8 @@ vim.diagnostic.config({
 	virtual_text = false,
 	severity_sort = true,
 	float = {
-		border = 'none',
-		source = 'always',
+		border = 'solid',
+		source = true,
 	},
 })
 
@@ -146,31 +178,50 @@ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 	}
 )
 
+local function stop_path()
+	local path = vim.fn.system("git rev-parse --show-toplevel")
+
+	if path:sub(1, 1) == "/" then
+		return path
+	end
+
+	return vim.fn.expand("%:p:h")
+end
+
 local js = {
 	formatters.if_file_exists({
 		pattern = { "eslint.config.*" },
+		stop_path = stop_path,
 		formatter = formatters.shell({
 			cmd = { "eslint", "--stdin-filename", "%", " --fix-to-stdout" },
 		})
 	}),
 	formatters.if_file_exists({
 		pattern = { ".prettierrc", ".prettierrc.*", "prettier.config.*" },
+		stop_path = stop_path,
 		formatter = formatters.shell({
 			cmd = { "prettier", "--stdin-filepath", "%" },
 		})
 	}),
+	-- formatters.if_file_exists({
+	--   pattern = { "biome.json", "biome.jsonc" },
+	--   formatter = formatters.shell({
+	--     cmd = { "biome", "check", "--apply-unsafe", "--skip-errors", "--stdin-file-path", "%" },
+	--   })
+	-- }),
 	formatters.if_file_exists({
 		pattern = { "biome.json", "biome.jsonc" },
+		stop_path = stop_path,
 		formatter = formatters.shell({
-			cmd = { "biome", "check", "--apply-unsafe", "--skip-errors", "--stdin-file-path", "%" },
+			cmd = { "biome", "format", "--skip-errors", "--stdin-file-path", "%" },
 		})
 	}),
-	formatters.lsp,
+	-- formatters.lsp,
 }
 
 format_on_save.setup({
 	stderr_loglevel = vim.log.levels.OFF,
-	auto_commands = false,
+	auto_commands = true,
 	--  user_commands = false,
 	exclude_path_patterns = {
 		"/node_modules/",
@@ -332,7 +383,7 @@ local null_ls = require('null-ls')
 --   - end_col (number): The ending column of the selection (1-based index).
 -- @return string The extracted text, including newlines if the selection spans multiple lines.
 -- @return string[] A table containing the extracted lines of text.
-function get_selection_from_lines(lines, selection_pos)
+function _G.get_selection_from_lines(lines, selection_pos)
 	local selection = ""
 	local extracted_lines = {}
 
@@ -366,7 +417,6 @@ end
 function is_multiline_selection(selection_pos)
 	return selection_pos.row ~= selection_pos.end_row
 end
-
 
 local function indent_range(range)
 	select_range(range)
@@ -652,7 +702,7 @@ function apply_code_action(bufnr, selected_action)
 		return
 	end
 
-	if selected_action.action.command then  -- Handle command actions
+	if selected_action.action.command then -- Handle command actions
 		vim.lsp.buf.execute_command(selected_action.action.command)
 	elseif selected_action.action.edit then -- Handle edit actions
 		local workspace_edit = selected_action.action.edit
@@ -689,6 +739,47 @@ require("lspconfig.configs").vtsls = require("vtsls").lspconfig -- set default s
 require("lspconfig").vtsls.setup({
 	capabilities = capabilities,
 	on_attach = on_attach,
+	settings = {
+		typescript = {
+			preferences = {
+				includePackageJsonAutoImports = "off",
+				updateImportsOnFileMove = "always",
+				disableSuggestions = false,
+				quotePreference = "single",
+				includeCompletionsForImportStatements = true,
+				includeCompletionsForModuleExports = true,
+				includeAutomaticOptionalChainCompletions = true,
+				displayPartsForJSDoc = true,
+				importModuleSpecifierPreference = "project-relative",
+				importModuleSpecifierEnding = "auto",
+				generateReturnInDocTemplate = true,
+			}
+		},
+		javascript = {
+			preferences = {
+				includePackageJsonAutoImports = "off",
+				updateImportsOnFileMove = "always",
+				disableSuggestions = false,
+				quotePreference = "single",
+				includeCompletionsForImportStatements = true,
+				includeCompletionsForModuleExports = true,
+				includeAutomaticOptionalChainCompletions = true,
+				displayPartsForJSDoc = true,
+				importModuleSpecifierPreference = "project-relative",
+				importModuleSpecifierEnding = "auto",
+				generateReturnInDocTemplate = true,
+			}
+		},
+		vtsls = {
+			enableMoveToFileCodeAction = true,
+			experimental = {
+				completion = {
+					enableServerSideFuzzyMatch = true,
+					entriesLimit = 10,
+				}
+			}
+		},
+	},
 })
 
 lspconfig.emmet_language_server.setup({

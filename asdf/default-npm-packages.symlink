@@ -4,3 +4,6 @@ typescript
 yarn
 trash-cli
 delete-cli
+tailwindcss-language-server
+@antfu/ni
+pm2

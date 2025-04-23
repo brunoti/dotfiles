@@ -54,10 +54,13 @@ zle -N down-line-or-beginning-search
 #   tmux attach -t default || tmux new -s default
 # fi
 
-export TERM="screen-256color"
+export TERM="xterm-kitty"
 
 bindkey -v
 bindkey "^[M" accept-line
 bindkey "^B" backward-word
 bindkey "^N" forward-word
 bindkey "^R" history-incremental-search-backward
+
+export LUA_CPATH="/Users/bruno/.local/share/sketchybar_lua/sketchybar.so;;"
+

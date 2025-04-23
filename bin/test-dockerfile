@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Check if Dockerfile path is provided
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 <path_to_dockerfile>"
+  exit 1
+fi
+
+DOCKERFILE_PATH=$1
+
+# Generate a unique image name and container name using UUID
+UUID=$(uuidgen | tr '[:upper:]' '[:lower:]') # Convert UUID to lowercase
+IMAGE_NAME="my-test-image-$UUID"
+CONTAINER_NAME="my-container-$UUID"
+
+# Build the Docker image
+echo "Building the Docker image from $DOCKERFILE_PATH: $IMAGE_NAME"
+docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+
+# Run the Docker container in detached mode and remove it after stopping
+echo "Running the Docker container: $CONTAINER_NAME"
+CONTAINER_ID=$(docker run --name $CONTAINER_NAME -d $IMAGE_NAME)
+
+# # Wait for a specified time (e.g., 5 seconds) for testing
+# echo "Container is running with ID: $CONTAINER_ID"
+# sleep 5 # Change this duration as needed
+#
+# # Kill the container
+# echo "Stopping the Docker container..."
+# docker stop $CONTAINER_ID
+#
+# echo "Container stopped and removed."

@@ -18,6 +18,8 @@ bind-key -T copy-mode-vi 'v' send -X begin-selection
 bind-key -T copy-mode-vi 'V' send -X select-line
 bind-key -T copy-mode-vi 'r' send -X rectangle-toggle
 bind-key -T copy-mode-vi 'y' send -X copy-pipe-and-cancel 'pbcopy'
+unbind -T copy-mode MouseDragEnd1Pane
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "pbcopy"
 
 # use <prefix> s for horizontal split
 bind s split-window -v -c "#{pane_current_path}"
@@ -33,7 +35,8 @@ bind + resize-pane -U 10
 set-window-option -g mode-keys vi
 set -g base-index 1
 set -g status-keys vi
-set -g history-limit 10000
+set -g history-limit 100000
+set -g mouse on
 
 set-window-option -g automatic-rename off
 set-option -g set-titles off
@@ -56,22 +59,27 @@ set -g @plugin 'catppuccin/tmux'
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
 
-set -g @catppuccin_window_right_separator "█ "
-set -g @catppuccin_window_number_position "right"
-set -g @catppuccin_window_middle_separator " | "
+set -g @catppuccin_flavor "mocha"
+set -g @catppuccin_window_status_style "basic"
 
-set -g @catppuccin_window_default_fill "none"
-
-set -g @catppuccin_window_current_fill "all"
-
+# set -g @catppuccin_window_right_separator "█ "
+# set -g @catppuccin_window_number_position "right"
+# set -g @catppuccin_window_middle_separator " │ "
+#
+# set -g @catppuccin_window_default_fill "none"
+#
+# set -g @catppuccin_window_current_fill "all"
+#
 set -g @catppuccin_status_modules_right "application session user date_time"
 set -g @catppuccin_status_left_separator "█"
 set -g @catppuccin_status_right_separator "█"
-set -g @catppuccin_status_connect_separator "no"
-set -g @catppuccin_status_fill "all"
-
-
-set -g @catppuccin_date_time_text "%Y-%m-%d %H:%M:%S"
+# set -g @catppuccin_status_connect_separator "no"
+# set -g @catppuccin_status_fill "all"
+#
+set -g @catppuccin_window_current_number_color "#{@thm_lavender}"
+#
+#
+# set -g @catppuccin_date_time_text "%Y-%m-%d %H:%M:%S"
 
 
 # Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)

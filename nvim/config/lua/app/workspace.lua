@@ -17,7 +17,8 @@ local function get_workspaces()
 end
 
 ---@type fun(data: Workspace[]): snacks.picker.finder.Item[]
-local transform_to_picker_items = _.map_indexed(function(item, idx)
+local function transform_to_picker_items(data)
+	return _.map_indexed(function(item, idx)
 		return {
 			custom = item.custom,
 			last_opened = item.last_opened,
@@ -28,7 +29,12 @@ local transform_to_picker_items = _.map_indexed(function(item, idx)
 			score = idx,
 			text = item.name,
 		}
-	end)
+	end, data)
+end
+
+local function get_current_workspace()
+	return require('workspaces').name()
+end
 
 function M.picker()
 	local data = get_workspaces()
@@ -38,6 +44,7 @@ function M.picker()
 		items = picker_items,
 		format = "text",
 		preview = "none",
+		title = "Workspaces \\ Current: " .. (get_current_workspace() or "None"),
 		layout = {
 			preset = "vscode",
 		},

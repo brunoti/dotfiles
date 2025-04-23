@@ -6,7 +6,7 @@ znap source hlissner/zsh-autopair
 znap source ohmyzsh/ohmyzsh lib/completion.zsh
 znap source ohmyzsh/ohmyzsh lib/history.zsh
 znap source ohmyzsh/ohmyzsh lib/key-bindings.zsh
-znap source ohmyzsh/ohmyzsh plugins/{sudo,extract,yarn}
+# znap source ohmyzsh/ohmyzsh plugins/{extract}
 znap source ael-code/zsh-colored-man-pages
 znap source mafredri/zsh-async
 

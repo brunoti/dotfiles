@@ -17,6 +17,9 @@
 [core]
         excludesfile = ~/.gitignore
 	editor = nvim
+	fsmonitor = true
+	untrackedcache = true
+	preloadindex = true
 [apply]
         whitespace = nowarn
 [mergetool]
@@ -34,7 +37,7 @@
 [credential]
 	helper = osxkeychain
 [user]
-	name = bop
+	name = Bruno Oliveira de Paula
 	email = brunohdbass@gmail.com
 [rerere]
 	enabled = 1
@@ -45,3 +48,5 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[pull]
+	rebase = true

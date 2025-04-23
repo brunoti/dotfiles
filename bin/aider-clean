@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Create a temporary directory for the empty context
+TMP_DIR=$(mktemp -d)
+
+# Trap signals to clean up the temporary directory on exit
+trap "rm -rf '$TMP_DIR'; exit" INT TERM EXIT
+
+# Construct the aider command with all arguments and the --no-git flag (if available)
+#  Important: Replace `--no-git` with the actual flag if it's different in your Aider version.
+AIDER_CMD="aider --chat-mode ask --no-git \"\$@\"" # Using --no-git flag - if it exists.
+
+# Change to the temporary directory
+cd "$TMP_DIR"
+
+# Execute the aider command
+eval "$AIDER_CMD"
+
+# The trap will clean up the temporary directory when the script exits.

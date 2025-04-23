@@ -3,12 +3,12 @@ local compose   = require "lib.compose"
 local curry, _  = require "lib.curry"
 local predicate = require "lib.predicate"
 
-local M = {}
+local M         = {}
 
-M.pipe = pipe
-M.compose = compose
-M.curry = curry
-M._ = _
+M.pipe          = pipe
+M.compose       = compose
+M.curry         = curry
+M._             = _
 
 --- Returns a deep copy of the given object. Non-table objects are copied as
 --- in a typical Lua assignment, whereas table objects are copied recursively.
@@ -29,7 +29,7 @@ M._ = _
 --- cause `deepcopy()` to fail.
 ---@return T Table of copied keys and (nested) values.
 function M.deep_copy(orig, noref)
-  return vim.deepcopy(orig, noref)
+	return vim.deepcopy(orig, noref)
 end
 
 -- Adds an item at the beginning of a table
@@ -60,6 +60,21 @@ M.map = curry(function(fn, tbl)
 	return new_tbl
 end)
 
+M.flat_map = curry(function(fn, tbl)
+	local new_tbl = {}
+	for k, v in pairs(tbl) do
+		local res = fn(v)
+		if type(res) ~= "table" then
+			table.insert(new_tbl, res)
+		else
+			for _, r in pairs(res) do
+				table.insert(new_tbl, r)
+			end
+		end
+	end
+	return new_tbl
+end)
+
 M.filter = curry(function(fn, tbl)
 	local new_tbl = {}
 	for k, v in pairs(tbl) do
@@ -68,6 +83,23 @@ M.filter = curry(function(fn, tbl)
 		end
 	end
 	return new_tbl
+end)
+
+M.find = curry(function(fn, tbl)
+	for _, v in pairs(tbl) do
+		if fn(v) then
+			return v
+		end
+	end
+end)
+
+M.contains = curry(function(value, tbl)
+	for _, v in pairs(tbl) do
+		if v == value then
+			return true
+		end
+	end
+	return false
 end)
 
 M.reduce = curry(function(fn, acc, tbl)
@@ -79,7 +111,7 @@ end)
 
 --- Maps over a table and returns a new table with the same keys, but with the
 --- values replaced by the result of the function.
---- 
+---
 --- @overload fun(fn: fun(value: any, key: any): any, tbl: table): any
 --- @overload fun(fn: fun(value: any, key: any): any): fun(tbl: table): any
 M.map_indexed = curry(function(fn, tbl)

@@ -29,6 +29,11 @@ function M.start_command(command)
 	vim.api.nvim_feedkeys(':' .. command .. ' ', 'n', false)
 end
 
+function M.run_command(command)
+	local final_command = vim.api.nvim_replace_termcodes(":" .. command .. "<cr>", true, false, true)
+	vim.api.nvim_feedkeys(final_command, 'n', false)
+end
+
 function M.set_registry(name, value)
 	vim.fn.setreg(name, value)
 end

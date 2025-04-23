@@ -13,6 +13,7 @@ return {
 			-- },
 			{
 				"catppuccin/nvim",
+				enabled = false,
 				name = "catppuccin",
 				priority = 1000,
 				opts = {
@@ -39,14 +40,14 @@ return {
 					},
 					integrations = {
 						telescope = {
-							enabled = true,
+							enabled = false,
 						},
 						which_key = true,
 						navic = {
 							enabled = true,
 						},
-						cmp = true,
-						nvimtree = false,
+						blink_cmp = true,
+						nvimtree = true,
 						treesitter = true,
 						native_lsp = {
 							enabled = true,
@@ -65,7 +66,6 @@ return {
 							inlay_hints = {
 								background = true,
 							},
-
 						},
 						noice = true,
 						snacks = true,
@@ -74,6 +74,7 @@ return {
 							enabled = true,
 							indentscope_color = "lavender",
 						},
+						grug_far = true,
 						lsp_saga = true,
 						diffview = true,
 						mason = true,
