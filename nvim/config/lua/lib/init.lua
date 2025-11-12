@@ -26,11 +26,20 @@ function M.is_normal_mode()
 end
 
 function M.start_command(command)
-	vim.api.nvim_feedkeys(':' .. command .. ' ', 'n', false)
+	vim.api.nvim_feedkeys(':' .. command .. ' ', vim.api.nvim_get_mode().mode, false)
+end
+
+function M.get_command(command)
+	return "<cmd>" .. command .. "<cr>"
+end
+
+function M.press(key)
+	local final_key = vim.api.nvim_replace_termcodes(key, true, false, true)
+	vim.api.nvim_feedkeys(final_key, 'n', false)
 end
 
 function M.run_command(command)
-	local final_command = vim.api.nvim_replace_termcodes(":" .. command .. "<cr>", true, false, true)
+	local final_command = vim.api.nvim_replace_termcodes("<cmd>" .. command .. "<cr>", true, false, true)
 	vim.api.nvim_feedkeys(final_command, 'n', false)
 end
 

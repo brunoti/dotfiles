@@ -36,7 +36,8 @@ local function get_current_workspace()
 	return require('workspaces').name()
 end
 
-function M.picker()
+function M.picker(fn)
+	local callback = fn and fn or _.noop
 	local data = get_workspaces()
 	local picker_items = transform_to_picker_items(data)
 
@@ -52,6 +53,8 @@ function M.picker()
 			picker:close()
 			if item then
 				require('workspaces').open(item.name)
+				callback(item)
+				Snacks.picker.files()
 			end
 		end
 	})

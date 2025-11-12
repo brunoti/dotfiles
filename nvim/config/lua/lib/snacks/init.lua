@@ -7,4 +7,6 @@ function M.term_run(command, opts)
 	Snacks.terminal.open('zsh -c "' .. command .. '; exec zsh"', opts)
 end
 
+_G.term_run = M.term_run
+
 return M

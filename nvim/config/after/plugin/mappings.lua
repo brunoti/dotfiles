@@ -1,3 +1,5 @@
+if vim.g.vscode then return end
+
 local lib = require('lib')
 local _ = require('lib.fp')
 local pred = require('lib.predicate')
@@ -6,9 +8,33 @@ local wk = require("which-key")
 
 vim.keymap.set({ 'n', 'x' }, 's', '<Nop>')
 
+_G.buffer_calls = {
+	next = lib.get_command("BufferLineCycleNext"),
+	previous = lib.get_command("BufferLineCyclePrev"),
+	delete = function() Snacks.bufdelete.delete() end,
+	only = function() Snacks.bufdelete.other() end,
+}
+
+function is_dashboard()
+	return vim.bo.filetype == "snacks_dashboard"
+end
+
+_G.code_companion_call = function()
+	Snacks.input({
+		icon = "󱝁 ",
+		backdrop = true,
+		prompt = "What do you want do?",
+	}, function(value)
+		if value and value ~= "" then
+			lib.run_command("'<,'>CodeCompanion #{buffer} " .. value)
+		end
+	end)
+end
+
 -- Set leader keys
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
 local TEST_FILE_PATTERN = {
 	"*.test.js",
 	"*.test.jsx",
@@ -46,7 +72,7 @@ local KEYMAPS = {
 	["<Tab>"]          = {
 		mode = { "n", "v" },
 		cmd = {
-			n = function() vim.cmd.normal(">>") end, -- Normal mode command
+			n = function() vim.cmd.normal(">>") end,  -- Normal mode command
 			v = function() vim.cmd.normal(">gv") end, -- Visual mode command
 		},
 		desc = "Indent line(s)",
@@ -63,7 +89,7 @@ local KEYMAPS = {
 	["<S-Tab>"]        = {
 		mode = { "n", "v" },
 		cmd = {
-			n = function() vim.cmd.normal("<<") end, -- Normal mode command
+			n = function() vim.cmd.normal("<<") end,  -- Normal mode command
 			v = function() vim.cmd.normal("<gv") end, -- Visual mode command
 		},
 		desc = "Unindent line(s)",
@@ -74,7 +100,7 @@ local KEYMAPS = {
 		mode = { "v" },
 		cmd = function()
 			local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
-			vim.cmd.normal("y")                              -- Yank selection to default register
+			vim.cmd.normal("y")                                 -- Yank selection to default register
 			vim.cmd.search(string.format("\\V%s", search_term)) -- Search for the escaped term
 		end,
 		desc = "Visual star search (escaped)",
@@ -83,15 +109,11 @@ local KEYMAPS = {
 		mode = { "v" },
 		cmd = function()
 			local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
-			vim.cmd.normal("y")                                                    -- Yank selection to default register
+			vim.cmd.normal("y")                                                       -- Yank selection to default register
 			vim.cmd.search(string.format("\\V%s", search_term), { backwards = true }) -- Search backwards
 		end,
 		desc = "Visual # search (escaped)",
 	},
-
-	-- System clipboard integration for yank and paste
-	["<leader>y"]      = { mode = { "v" }, cmd = function() vim.cmd.normal([["+y]]) end, desc = "Yank to system clipboard" },
-	["<leader>p"]      = { mode = { "v" }, cmd = function() vim.cmd.normal([["+p]]) end, desc = "Paste from system clipboard" },
 
 	-- Escape from terminal mode
 	["<Esc>"]          = { mode = { "t" }, cmd = function() vim.cmd.stopinsert() end, desc = "Escape from terminal mode" },
@@ -376,10 +398,10 @@ local function set_keymaps(keymaps)
 
 				-- Use the group key for starter descriptions in which-key
 				wk.add({
-					key,                  -- lhs (left-hand side)
-					cmd,                  -- rhs (right-hand side) or cmd function
+					key,                       -- lhs (left-hand side)
+					cmd,                       -- rhs (right-hand side) or cmd function
 					group = keymap_data.group, -- Group for description
-					desc = keymap_data.desc, -- Description
+					desc = keymap_data.desc,   -- Description
 					mode = mode,
 					noremap = _.key_or(keymap_data, 'noremap', true),
 					silent = _.key_or(keymap_data, 'silent', true),
@@ -446,7 +468,7 @@ wk.add({
 	mode = { "n" },
 	{
 		"]d",
-		function() vim.diagnostic.goto_next() end,
+		function() vim.diagnostics.goto_next() end,
 		desc = "Next diagnostic",
 		icon = " ",
 	},
@@ -471,7 +493,7 @@ wk.add({
 	mode = { "n" },
 	{
 		"[d",
-		function() vim.diagnostic.goto_prev() end,
+		function() vim.diagnostics.goto_prev() end,
 		desc = "Previous diagnostic",
 		icon = " ",
 	},
@@ -514,7 +536,7 @@ wk.add({
 	},
 	{
 		"mb",
-		function() vim.cmd.bprevious() end,
+		buffer_calls.previous,
 		desc = "previous buffer",
 		icon = " ",
 	},
@@ -545,7 +567,7 @@ wk.add({
 	},
 	{
 		",b",
-		function() vim.cmd.bnext() end,
+		buffer_calls.next,
 		desc = "next buffer",
 		icon = " ",
 	},
@@ -660,8 +682,9 @@ local cmd_abbreviations = {
 	{ "Q",    "q" },
 	{ "Qa",   "qa" },
 	{ "lazy", "Lazy" },
-	{ "cc",   "CodeCompanion #buffer #lsp" },
-	{ "ccc",  "CodeCompanionChat" },
+	{ "ccc",  "CodeCompanion" },
+	{ "ccb",  "CodeCompanion #{buffer}" },
+	-- { "ccc",  "CodeCompanionChat" },
 	{ "cca",  "CodeCompanionActions" },
 }
 
@@ -772,18 +795,6 @@ wk.add({
 		icon = " ",
 		mode = { "n", "x" },
 	},
-	{
-		"<leader>ot",
-		function()
-			Snacks.terminal.toggle(nil, {
-				win = { position = 'right', width = 0.3 }
-			})
-		end,
-		desc = "Toggle vertical terminal",
-		icon = " ",
-		mode = { "n", "x" },
-	},
-
 })
 
 wk.add({
@@ -853,8 +864,8 @@ wk.add({
 	},
 	{
 		"<leader>sa",
-		function() Snacks.picker.autocmds() end,
-		desc = "Show autocmds",
+		function() require("aerial").snacks_picker() end,
+		desc = "Aerial",
 		icon = " ",
 	},
 	{
@@ -959,46 +970,107 @@ wk.add({
 	}
 })
 
+
 wk.add({
-	"<leader>b",
-	mode = { "n" },
 	group = "  Buffers",
-	icon = " ", -- Icon for buffers group
+	icon = " ",
+	-- NOTE: <A-j> and <A-k> commented out in favor of window navigation
+	-- Alternative buffer navigation: ,b (next), mb (previous), <leader>bn/bp
+	-- {
+	-- 	"<A-k>",
+	-- 	buffer_calls.next,
+	-- 	mode = "n",
+	-- },
+	-- {
+	-- 	"<A-j>",
+	-- 	buffer_calls.previous,
+	-- 	mode = "n",
+	-- },
 	{
-		"<leader>bn",
-		function() vim.cmd.bnext() end,
-		desc = "Go to next buffer",
-		icon = " ", -- Icon for next buffer
+		"<A-q>",
+		buffer_calls.delete,
+		mode = "n",
 	},
 	{
-		"<leader>bp",
-		function() vim.cmd.bprevious() end,
-		desc = "Go to previous buffer",
-		icon = " ", -- Icon for previous buffer
+		"<leader>b",
+		mode = { "n" },
+		group = "  Buffers",
+		icon = " ",
+		{
+			"<leader>bb",
+			'<cmd>BufferLinePick<CR>',
+			desc = "Go to next buffer",
+			icon = " ", -- Icon for next buffer
+		},
+		{
+			"<leader>bn",
+			buffer_calls.next,
+			desc = "Go to next buffer",
+			icon = " ", -- Icon for next buffer
+		},
+		{
+			"<leader>bp",
+			buffer_calls.previous,
+			desc = "Go to previous buffer",
+			icon = " ", -- Icon for previous buffer
+		},
+		{
+			"<leader>bd",
+			buffer_calls.delete,
+			desc = "Delete current buffer",
+			icon = "", -- Icon for delete buffer
+		},
+		{
+			"<leader>bo",
+			buffer_calls.only,
+			desc = "Delete other buffers",
+			icon = " ", -- Icon for delete buffer
+		},
+		{
+			",b",
+			buffer_calls.next,
+			desc = "Go to next buffer",
+			icon = " ", -- Icon for next buffer
+		},
+		{
+			"mb",
+			buffer_calls.previous,
+			desc = "Go to previous buffer",
+			icon = " ", -- Icon for previous buffer
+		},
+	}
+})
+
+wk.add({
+	group = "  Window Navigation",
+	icon = " ",
+	{
+		"<A-h>",
+		function() require("tmux").move_left() end,
+		mode = "n",
+		desc = "Navigate to left window",
+		icon = " ",
 	},
 	{
-		"<leader>bd",
-		Snacks.bufdelete.delete,
-		desc = "Delete current buffer",
-		icon = "", -- Icon for delete buffer
+		"<A-j>",
+		function() require("tmux").move_bottom() end,
+		mode = "n",
+		desc = "Navigate to window below",
+		icon = " ",
 	},
 	{
-		"<leader>bo",
-		Snacks.bufdelete.other,
-		desc = "Delete other buffers",
-		icon = " ", -- Icon for delete buffer
+		"<A-k>",
+		function() require("tmux").move_top() end,
+		mode = "n",
+		desc = "Navigate to window above",
+		icon = " ",
 	},
 	{
-		",b",
-		function() vim.cmd.bnext() end,
-		desc = "Go to next buffer",
-		icon = " ", -- Icon for next buffer
-	},
-	{
-		"mb",
-		function() vim.cmd.bprevious() end,
-		desc = "Go to previous buffer",
-		icon = " ", -- Icon for previous buffer
+		"<A-l>",
+		function() require("tmux").move_right() end,
+		mode = "n",
+		desc = "Navigate to right window",
+		icon = " ",
 	},
 })
 
@@ -1006,6 +1078,27 @@ wk.add({
 	"<leader>t",
 	mode = { "n" },
 	group = "  Tabs",
+	{
+		"<leader>tt",
+		function()
+			lib.press("<esc>")
+			if is_dashboard() then
+				lib.run_command("ene")
+			end
+			if not is_dashboard() then
+				lib.run_command("tabe")
+			end
+			vim.schedule(function()
+				app_workspace.picker(
+					function(workspace)
+						lib.run_command("BufferLineTabRename " .. workspace.name)
+					end
+				)
+			end)
+		end,
+		desc = "New tab",
+		icon = " "
+	},
 	{
 		"<leader>te",
 		function() lib.start_command("tabedit") end,
@@ -1028,6 +1121,12 @@ wk.add({
 		"<leader>to",
 		function() vim.cmd.tabonly() end,
 		desc = "Close all other tabs",
+		icon = "" -- Icon for close other tabs
+	},
+	{
+		"<leader>tq",
+		function() vim.cmd.tabclose() end,
+		desc = "Close tab",
 		icon = "" -- Icon for close other tabs
 	},
 })
@@ -1083,13 +1182,40 @@ wk.add({
 		mode = { "n" },
 	},
 	{
+		"<leader>cc",
+		function()
+			lib.start_command("CodeCompanion #{buffer}")
+		end,
+		desc = "Code Companion",
+		icon = "󱐏 ",
+		mode = { "x" },
+	},
+	{
 		"<leader>ca",
 		function()
-			lib.start_command("CodeCompanion #lsp #buffer")
+			lib.start_command("CodeCompanion #{buffer}")
 		end,
 		desc = "Code Companion: Write action",
 		icon = "󱐏 ",
 		mode = { "n", "x" },
+	},
+	{
+		"<leader>cr",
+		function()
+			require("codecompanion.cursor_rules").add_cursor_rules_to_chat()
+		end,
+		desc = "Code Companion: Add cursor rules to chat",
+		icon = " ",
+		mode = { "n" },
+	},
+	{
+		"<leader>cl",
+		function()
+			require("codecompanion.cursor_rules").set_cursor_rules_variable()
+		end,
+		desc = "Code Companion: Load cursor rules",
+		icon = " ",
+		mode = { "n" },
 	},
 })
 
@@ -1103,6 +1229,7 @@ wk.add({
 		function()
 			if lib.is_visual_mode() then
 				require('textcase').current_word('to_upper_case')
+				lib.press('<bs>')
 			else
 				require('textcase').operator('to_upper_case')
 			end
@@ -1154,7 +1281,7 @@ wk.add({
 		desc = "Textcase: Convert to CONSTANT_CASE",
 	},
 	{
-		"<leader>xd",
+		"<leader>xD",
 		function()
 			if lib.is_visual_mode() then
 				require('textcase').current_word('to_dot_case')
@@ -1207,7 +1334,6 @@ wk.add({
 			end
 		end,
 		desc = "Textcase: Convert to PascalCase",
-		ms
 	},
 	{
 		"<leader>xt",
@@ -1252,7 +1378,19 @@ wk.add({
 	},
 	{
 		"<leader>fb",
-		function() Snacks.picker.buffers() end,
+		function()
+			Snacks.picker.buffers({
+				filter = { cwd = vim.fn.getcwd() },
+			})
+		end,
+		desc = "Snacks: Open Workspace buffers",
+		icon = " ",
+	},
+	{
+		"<leader>fB",
+		function()
+			Snacks.picker.buffers()
+		end,
 		desc = "Snacks: Open buffers",
 		icon = " ",
 	},
@@ -1284,6 +1422,12 @@ wk.add({
 		"<leader>fr",
 		function() Snacks.picker.recent({ filter = { cwd = vim.fn.getcwd() } }) end,
 		desc = "Snacks: Recent files (workspaces)",
+		icon = " ",
+	},
+	{
+		"<leader>fR",
+		function() Snacks.picker.recent() end,
+		desc = "Snacks: Recent files",
 		icon = " ",
 	},
 	{
@@ -1343,6 +1487,12 @@ wk.add({
 		desc = "Browse Git Repository",
 		icon = " ",
 	},
+	{
+		"<leader>gd",
+		'<cmd>DiffviewOpen<cr>',
+		desc = "Open diff view",
+		icon = " ",
+	},
 })
 
 
@@ -1382,12 +1532,58 @@ wk.add({
 		mode = { "n", "t", "x" },
 	},
 	{
-		"<C-t>",
+		"<C-t><C-t>",
 		function()
-			Snacks.terminal.toggle(nil, {
+			Snacks.terminal.toggle('zsh', {
+				cwd = vim.fn.getcwd(),
 				win = {
-					style = "terminal",
-					position = "float"
+					backdrop = 10,
+					border = "solid",
+					position = "float",
+					title = "🔮 term: " .. vim.fn.getcwd(),
+					wo = {
+						winbar = "🔮 term: " .. vim.fn.getcwd()
+					}
+				}
+			})
+		end,
+		mode = { "n", "t", "x" },
+		icon = " ",
+		desc = "Toggle terminal",
+	},
+	{
+		"<C-t><C-v>",
+		function()
+			Snacks.terminal.toggle('zsh', {
+				cwd = vim.fn.getcwd(),
+				win = {
+					backdrop = 10,
+					border = "solid",
+					position = "right",
+					title = "🔮 term: " .. vim.fn.getcwd(),
+					wo = {
+						winbar = "🔮 term: " .. vim.fn.getcwd()
+					}
+				}
+			})
+		end,
+		mode = { "n", "t", "x" },
+		icon = " ",
+		desc = "Toggle terminal",
+	},
+	{
+		"<C-t><C-h>",
+		function()
+			Snacks.terminal.toggle('zsh', {
+				cwd = vim.fn.getcwd(),
+				win = {
+					backdrop = 10,
+					border = "solid",
+					position = "bottom",
+					title = "🔮 term: " .. vim.fn.getcwd(),
+					wo = {
+						winbar = "🔮 term: " .. vim.fn.getcwd()
+					}
 				}
 			})
 		end,
@@ -1435,42 +1631,6 @@ vim.api.nvim_create_autocmd("FileType", {
 	callback = function()
 		local minifiles = require('mini.files')
 
-		wk.add({
-			"<CR>",
-			function()
-				minifiles.go_in({ close_on_file = true })
-			end,
-			mode = { "n" },
-			desc = "Open",
-			buffer = true,
-			noremap = true,
-			silent = true,
-		})
-
-		wk.add({
-			"<tab>",
-			function()
-				minifiles.go_in({ close_on_file = false })
-			end,
-			mode = { "n" },
-			desc = "Open",
-			buffer = true,
-			noremap = true,
-			silent = true,
-		})
-
-		wk.add({
-			"<S-tab>",
-			function()
-				minifiles.go_out()
-			end,
-			mode = { "n" },
-			desc = "Out",
-			buffer = true,
-			noremap = true,
-			silent = true,
-		})
-
 		---@param map string
 		---@return wk.Spec
 		local function close(map)
@@ -1488,8 +1648,104 @@ vim.api.nvim_create_autocmd("FileType", {
 			}
 		end
 
+		---@param map string
+		---@return wk.Spec
+		local function go_in(map, config)
+			return {
+				map,
+				function()
+					minifiles.go_in(config)
+				end,
+				mode = { "n" },
+				desc = "Go In",
+				icon = " ",
+				buffer = true,
+				noremap = true,
+				silent = true,
+			}
+		end
+
+		---@param map string
+		---@return wk.Spec
+		local function go_out(map, config)
+			return {
+				map,
+				function()
+					minifiles.go_out()
+				end,
+				mode = { "n" },
+				desc = "Go Out",
+				icon = " ",
+				buffer = true,
+				noremap = true,
+				silent = true,
+			}
+		end
+
+		-- ---@param map string
+		-- ---@return wk.Spec
+		-- local function open(map)
+		-- 	return {
+		-- 		map,
+		-- 		function()
+		-- 			minifiles.open()
+		-- 		end,
+		-- 		mode = { "n" },
+		-- 		desc = "Open",
+		-- 		icon = "󰏆 ",
+		-- 		buffer = true,
+		-- 		noremap = true,
+		-- 		silent = true,
+		-- 	}
+		-- end
+		--
+		-- ---@param map string
+		-- ---@return wk.Spec
+		-- local function toggle(map)
+		-- 	return {
+		-- 		map,
+		-- 		function()
+		-- 			minifiles.toggle()
+		-- 		end,
+		-- 		mode = { "n" },
+		-- 		desc = "Toggle",
+		-- 		icon = "󰄬 ",
+		-- 		buffer = true,
+		-- 		noremap = true,
+		-- 		silent = true,
+		-- 	}
+		-- end
+
+		---@param map string
+		---@return wk.Spec
+		local function refresh(map)
+			return {
+				map,
+				function()
+					minifiles.refresh()
+				end,
+				mode = { "n" },
+				desc = "Refresh",
+				icon = "󰑓 ",
+				buffer = true,
+				noremap = true,
+				silent = true,
+			}
+		end
+
 		wk.add(close("<leader>q"))
 		wk.add(close("q"))
+
+		wk.add(refresh("<leader>r"))
+
+		wk.add(go_in("L", { close_on_file = false }))
+		wk.add(go_in("<Tab>", { close_on_file = false }))
+		wk.add(go_in("<CR>", { close_on_file = true }))
+
+		wk.add(go_out("H"))
+		wk.add(go_out("<BS>"))
+		wk.add(go_out("<S-Tab>"))
+
 
 		wk.add({
 			"<leader>w",
@@ -1503,4 +1759,149 @@ vim.api.nvim_create_autocmd("FileType", {
 			silent = true,
 		})
 	end,
+})
+wk.add({
+	group = " Neovide",
+	icon = " ",
+	{
+		"<D-s>",
+		":w<CR>",
+		desc = "Save",
+		icon = " ",
+		mode = { "n" },
+	},
+	{
+		"<D-c>",
+		'"+y',
+		desc = "Copy",
+		icon = " ",
+		mode = { "v" },
+	},
+	{
+		"<D-c>",
+		'"+y',
+		desc = "Copy",
+		icon = " ",
+		mode = { "v" },
+	},
+	{
+		"<D-v>",
+		'"+P',
+		desc = "Paste",
+		icon = " ",
+		mode = { "n", "v" },
+	},
+	{
+		"<D-v>",
+		'<C-R>+',
+		desc = "Paste command mode",
+		icon = " ",
+		mode = { "c" },
+	},
+	{
+		"<D-v>",
+		'<ESC>l"+Pli',
+		desc = "Paste insert mode",
+		icon = " ",
+		mode = { "i" },
+	},
+	{
+		"<D-v>",
+		"<C-\\><C-o><C-r>+<space>",
+		desc = "Paste",
+		icon = " ",
+		mode = { "t", },
+	},
+})
+
+wk.add({
+	group = " Neovide",
+	icon = " ",
+	{
+		"<D-s>",
+		":w<CR>",
+		desc = "Save",
+		icon = " ",
+		mode = { "n" },
+	},
+	{
+		"<D-c>",
+		'"+y',
+		desc = "Copy",
+		icon = " ",
+		mode = { "v" },
+	},
+	{
+		"<D-c>",
+		'"+y',
+		desc = "Copy",
+		icon = " ",
+		mode = { "v" },
+	},
+	{
+		"<D-v>",
+		'"+P',
+		desc = "Paste",
+		icon = " ",
+		mode = { "n", "v" },
+	},
+	{
+		"<D-v>",
+		'<C-R>+',
+		desc = "Paste command mode",
+		icon = " ",
+		mode = { "c" },
+	},
+	{
+		"<D-v>",
+		'<ESC>l"+Pli',
+		desc = "Paste insert mode",
+		icon = " ",
+		mode = { "i" },
+	},
+	{
+		"<D-v>",
+		"<C-\\><C-o><C-r>+<space>",
+		desc = "Paste",
+		icon = " ",
+		mode = { "t", },
+	},
+})
+
+
+if vim.g.neovide then
+	wk.add({
+		"<C-=>",
+		function()
+			vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * 1.25
+		end,
+		desc = "Increase Neovide scale factor",
+		icon = " ",
+		mode = { "n" },
+	})
+
+	wk.add({
+		"<C-->",
+		function()
+			vim.g.neovide_scale_factor = vim.g.neovide_scale_factor / 1.25
+		end,
+		desc = "Decrease Neovide scale factor",
+		icon = " ",
+		mode = { "n" },
+	})
+end
+
+wk.add({
+	{
+		"<leader>y",
+		"\"+y",
+		desc = "Yank to system clipboard",
+		mode = { "v", "n" },
+	},
+	{
+		"<leader>p",
+		"\"+p",
+		desc = "Paste from system clipboard",
+		mode = { "n", "v" },
+	}
 })

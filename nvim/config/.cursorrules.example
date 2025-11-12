@@ -1,0 +1,39 @@
+# Neovim Configuration Rules
+
+## Code Style
+- Use 2 spaces for indentation in Lua files
+- Prefer explicit local variables over globals
+- Use descriptive variable and function names
+- Keep functions small and focused (max 30 lines)
+
+## Lua Patterns
+- Use `local function` instead of `function` for file-local functions
+- Prefer `require()` over `vim.cmd()` when possible
+- Use `vim.api.nvim_*` functions for buffer/window operations
+- Organize code with clear separation of concerns
+
+## Plugin Configuration
+- Group related plugin configurations together
+- Use lazy loading when appropriate
+- Document complex configurations with comments
+- Prefer declarative configuration over imperative
+
+## Error Handling
+- Always check if required modules exist before using them
+- Use `pcall()` for operations that might fail
+- Provide meaningful error messages
+- Gracefully degrade when optional features are unavailable
+
+## Performance
+- Use `vim.schedule()` for async operations
+- Avoid expensive operations in autocommands
+- Cache results when appropriate
+- Profile code when performance is critical
+
+## Documentation
+- Document all public functions with clear descriptions
+- Include usage examples for complex functions
+- Explain non-obvious logic with inline comments
+- Keep documentation up to date with code changes
+
+

@@ -1,4 +1,4 @@
----@diagnostic disable: missing-fields
+--@diagnostic disable: missing-fields
 local _ = require('lib.fp')
 local uv = require('luv')
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
@@ -12,14 +12,29 @@ if not uv.fs_stat(lazypath) then
 		lazypath,
 	})
 end
-vim.opt.rtp:prepend(lazypath)
 
+vim.opt.rtp:prepend(lazypath)
 
 local function setup()
 	require('lazy').setup({
+		{
+			"OXY2DEV/markview.nvim",
+			lazy = false,
+			priority = 1,
+			opts = {
+				preview = {
+					filetypes = { "markdown", "codecompanion", "Avante" },
+					ignore_buftypes = {},
+				},
+			},
+		},
 		-- neovim tree sitter
 		{
 			"nvim-treesitter/nvim-treesitter",
+			priority = 2,
+			dependencies = {
+				'nvim-treesitter/nvim-treesitter-textobjects'
+			},
 			build = ":TSUpdate",
 			config = function()
 				local configs = require("nvim-treesitter.configs")
@@ -36,6 +51,9 @@ local function setup()
 						additional_vim_regex_highlighting = true,
 					},
 					highlight = { enable = true },
+					textobjects = {
+						enabled = true
+					}
 				})
 
 				vim.wo.foldmethod = 'expr'
@@ -105,11 +123,41 @@ local function setup()
 			"SmiteshP/nvim-navic",
 			event = 'VeryLazy',
 			opts = {
-				depth_limit = 2,
+				icons = {
+					File = '  ',
+					Module = '  ',
+					Namespace = '  ',
+					Package = '  ',
+					Class = '  ',
+					Method = '  ',
+					Property = '  ',
+					Field = '  ',
+					Constructor = '  ',
+					Enum = '  ',
+					Interface = '  ',
+					Function = '  ',
+					Variable = '  ',
+					Constant = '  ',
+					String = '  ',
+					Number = '  ',
+					Boolean = '  ',
+					Array = '  ',
+					Object = '  ',
+					Key = '  ',
+					Null = '  ',
+					EnumMember = '  ',
+					Struct = '  ',
+					Event = '  ',
+					Operator = '  ',
+					TypeParameter = '  '
+				},
+				depth_limit = 0,
 				highlight = true,
 				separator = "  ",
-				lazy_update_context = true,
+				lazy_update_context = false,
 				depth_limit_indicator = "[...]",
+				space_output = true,
+				click = true,
 				lsp = {
 					auto_attach = true
 				}
@@ -126,43 +174,43 @@ local function setup()
 			init = function()
 				local overseer = require 'overseer'
 				require('lualine').setup({
-					theme = 'tokyonight',
+					theme = 'tokyonight-night',
 					options = {
 						component_separators = { left = '', right = '' },
 						section_separators = { left = '', right = '' },
+						always_divide_middle = false,
+						globalstatus = true,
 						disabled_filetypes = {
-							'NvimTree',
-							"grug-far",
-							"grug-far-history",
-							"grug-far-help",
-							"dashboard",
-							"snacks_dashboard",
-							"trouble",
-							"snacks_explorer",
-							"kitty-scrollback",
+							winbar = {
+								"snacks_terminal",
+							},
+							-- 'NvimTree',
+							-- "grug-far",
+							-- "grug-far-history",
+							-- "grug-far-help",
+							-- "dashboard",
+							-- "trouble",
+							-- "kitty-scrollback",
+							-- "OverseerList",
+							-- "Avante",
+							-- "AvanteInput",
+							-- "AvanteSelectedFiles",
+							-- "AvantePromptInput",
+							-- "codecompanion",
+							-- "text.kulala_ui",
 						},
 					},
-					{
-						lualine_c = {
-							{
-								"navic",
-								color_correction = "dynamic"
-							}
-						},
+					sections = {
 						lualine_x = {
-						},
-						lualine_y = {
-						},
-						lualine_z = {
 							{
 								"overseer",
 								label = "", -- Prefix for task counts
 								colored = true, -- Color the task icons and counts
 								symbols = {
-									[overseer.STATUS.FAILURE] = "F:",
-									[overseer.STATUS.CANCELED] = "C:",
-									[overseer.STATUS.SUCCESS] = "S:",
-									[overseer.STATUS.RUNNING] = "R:",
+									[overseer.STATUS.FAILURE] = " :",
+									[overseer.STATUS.CANCELED] = " :",
+									[overseer.STATUS.SUCCESS] = " :",
+									[overseer.STATUS.RUNNING] = " :",
 								},
 								unique = false, -- Unique-ify non-running task count by name
 								name = nil, -- List of task names to search for
@@ -170,7 +218,22 @@ local function setup()
 								status = nil, -- List of task statuses to display
 								status_not = false, -- When true, invert the status search
 							},
+							lualine_codecompanion_spinner(),
+						},
+						lualine_y = {
+						},
+						lualine_z = {
 							'location'
+						}
+					},
+					winbar = {
+						lualine_c = {
+							-- { "filename" },
+							{
+								"navic",
+								color_correction = nil,
+								navic_opts = nil
+							}
 						}
 					},
 					extensions = { 'quickfix', 'nvim-tree', 'lazy', 'mason', "trouble", "man", "overseer" },
@@ -221,10 +284,10 @@ local function setup()
 		{
 			"GeorgesAlkhouri/nvim-aider",
 			cmd = {
-				"AiderTerminalToggle", "AiderHealth",
+				"Aider",
 			},
 			keys = {
-				-- { "<leader>a/", "<cmd>AiderTerminalToggle<cr>",    desc = "Open Aider" },
+				{ "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Open Aider" },
 				-- { "<leader>as", "<cmd>AiderTerminalSend<cr>",      desc = "Send to Aider",                  mode = { "n", "v" } },
 				-- { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>",  desc = "Send Command To Aider" },
 				-- { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>",   desc = "Send Buffer To Aider" },
@@ -406,6 +469,8 @@ local function setup()
 						max_attempts = 2,
 					}
 				},
+				"mikavilpas/blink-ripgrep.nvim",
+				'Kaiser-Yang/blink-cmp-avante',
 			},
 			cmdline = {
 				enabled = false
@@ -420,12 +485,19 @@ local function setup()
 				-- See the full "keymap" documentation for information on defining your own keymap.
 				keymap = {
 					preset = 'enter',
+					['<M-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+					['<M-a>'] = { function(cmp) cmp.show({ providers = { 'copilot', 'codeium', 'minuet' } }) end },
+					['<M-s>'] = { function(cmp) cmp.show({ providers = { 'snippets' } }) end },
+					['<M-l>'] = { function(cmp) cmp.show({ providers = { 'lsp' } }) end },
 				},
-
+				accept = {
+					dot_repeat = false,
+				},
 				appearance = {
 					-- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
 					-- Adjusts spacing to ensure icons are aligned
-					nerd_font_variant = 'normal'
+					nerd_font_variant = 'normal',
+					use_nvim_cmp_as_default = false,
 				},
 				completion = {
 					ghost_text = {
@@ -454,21 +526,80 @@ local function setup()
 						draw = {
 							gap = 2,
 							treesitter = { "lsp" },
-							columns = { { "label", "label_description", gap = 2 }, { "kind_icon", "kind" } },
+							columns = { { "kind_icon", "label" }, { "kind", "source_icon", "source_name", gap = 1 } },
 							components = {
 								kind = {
 									ellipsis = false,
 									width = { fill = true },
-									text = function(ctx) return '[' .. ctx.kind .. ']' end,
+									text = function(ctx)
+										local function uc_first(str)
+											return (str:gsub("^%l", string.upper))
+										end
+										return '[' .. uc_first(ctx.kind) .. ']'
+									end,
+								},
+								source_name = {
+									ellipsis = false,
+									text = function(ctx)
+										local function uc_first(str)
+											return (str:gsub("^%l", string.upper))
+										end
+										return '[' .. uc_first(ctx.kind) .. ']'
+									end,
+								},
+								source_icon = {
+									-- don't truncate source_icon
+									ellipsis = false,
+									text = function(ctx)
+										local source_icons = {
+											minuet = '󱗻',
+											orgmode = '',
+											otter = '󰼁',
+											nvim_lsp = '',
+											lsp = '',
+											buffer = '',
+											luasnip = '',
+											snippets = '',
+											path = '',
+											git = '',
+											tags = '',
+											cmdline = '󰘳',
+											latex_symbols = '',
+											cmp_nvim_r = '󰟔',
+											codeium = '󰩂',
+											-- FALLBACK
+											fallback = '󱧊',
+										}
+										local symbol = source_icons[ctx.source_name:lower()] or source_icons.fallback
+										return symbol
+									end,
+									highlight = 'BlinkCmpSource',
 								},
 								kind_icon = {
 									ellipsis = false,
 									text = function(ctx)
-										local symbol = require('lspkind').symbolic(ctx.kind, {
+										local extra_icons = {
+											claude = '󰋦',
+											openai = '󱢆',
+											codestral = '󱎥',
+											gemini = '',
+											Groq = '',
+											Openrouter = '󱂇',
+											Ollama = '󰳆',
+											['Llama.cpp'] = '󰳆',
+											Deepseek = '',
+											Codeium = "",
+											AvanteCmd = '',
+											AvanteMention = '',
+											Avante = '',
+										}
+
+										local symbol = extra_icons[ctx.kind] or require('lspkind').symbolic(ctx.kind, {
 											mode = 'symbol',
 											preset = 'default'
-										})
-										return " " .. symbol .. " "
+										}) or "X"
+
+										return " " .. symbol .. "  "
 									end,
 								},
 							},
@@ -479,8 +610,61 @@ local function setup()
 				-- Default list of enabled providers defined so that you can extend it
 				-- elsewhere in your config, without redefining it, due to `opts_extend`
 				sources = {
-					default = { 'copilot', 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
+					default = {
+						'lazydev',
+						'lsp',
+						'path',
+						'buffer',
+						'ripgrep',
+						'copilot',
+					},
+					per_filetype = {
+						minifiles = {
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+						Avante = {
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+						AvanteInput = {
+							'avante',
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+						AvanteSelectedFiles = {
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+						AvantePromptInput = {
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+						codecompanion = {
+							'codecompanion',
+							'path',
+							'buffer',
+							'ripgrep',
+						},
+					},
 					providers = {
+						codecompanion = {
+							name = "CodeCompanion",
+							module = "codecompanion.providers.completion.blink",
+							enabled = true,
+							score_offset = 700,
+						},
+						lsp = {
+							name = 'LSP',
+							module = 'blink.cmp.sources.lsp',
+							score_offset = 500,
+							async = true,
+						},
 						copilot = {
 							name = "copilot",
 							module = "blink-copilot",
@@ -492,24 +676,146 @@ local function setup()
 								max_completions = 3, -- Override global max_completions
 							}
 						},
-						-- minuet = {
-						-- 	name = 'minuet',
-						-- 	module = 'minuet.blink',
-						-- 	score_offset = 8,   -- Gives minuet higher priority among suggestions
-						-- },
+						avante = {
+							module = 'blink-cmp-avante',
+							name = 'Avante',
+							score_offset = 100,
+							opts = {
+								command = {
+									get_kind_name = function(_)
+										return 'AvanteCmd'
+									end
+								},
+								mention = {
+									get_kind_name = function(_)
+										return 'AvanteMention'
+									end
+								}
+							},
+						},
+						minuet = {
+							name = 'minuet',
+							module = 'minuet.blink',
+							async = true,
+							timeout_ms = 3000,
+							score_offset = 50, -- Gives minuet higher priority among suggestions
+						},
+						codeium = {
+							name = 'Codeium',
+							module = 'codeium.blink',
+							async = true,
+							score_offset = 50, -- Gives minuet higher priority among suggestions
+						},
 						lazydev = {
 							name = "LazyDev",
 							module = "lazydev.integrations.blink",
 							-- make lazydev completions top priority (see `:h blink.cmp`)
 							score_offset = 100,
 						},
+						ripgrep = {
+							module = "blink-ripgrep",
+							name = "Ripgrep",
+							score_offset = 10,
+							-- the options below are optional, some default values are shown
+							---@module "blink-ripgrep"
+							---@type blink-ripgrep.Options
+							opts = {
+								toggles = {
+									-- The keymap to toggle the plugin on and off from blink
+									-- completion results. Example: "<leader>tg"
+									on_off = nil,
+								},
+								backend = {
+									fallback_to_regex_highlighting = true,
+									context_size = 5,
+									rigpreg = {
+										prefix_min_len = 3,
+										max_filesize = "1M",
+										project_root_marker = ".git",
+										project_root_fallback = true,
+
+										search_casing = "--ignore-case",
+
+										additional_rg_options = {},
+										ignore_paths = {},
+										additional_paths = {},
+
+									},
+
+									use = "ripgrep",
+								},
+							},
+						},
 					},
 				},
 			},
 		},
 		{
+			'milanglacier/minuet-ai.nvim',
+			opts = {
+				blink = {
+					enable_auto_complete = true,
+				},
+				cmp = {
+					enable_auto_complete = false,
+				},
+				-- lsp = {
+				-- 	enabled_ft = { '*' }
+				-- },
+				virtualtext = {
+					auto_trigger_ignore_ft = { '*' },
+				},
+				provider = 'openai_compatible',
+				request_timeout = 2.5,
+				throttle = 1500, -- Increase to reduce costs and avoid rate limits
+				debounce = 600, -- Increase to reduce costs and avoid rate limits
+				provider_options = {
+					openai_compatible = {
+						api_key = 'OPENROUTER_API_KEY',
+						end_point = 'https://openrouter.ai/api/v1/chat/completions',
+						model = 'moonshotai/kimi-k2',
+						name = 'Openrouter',
+						optional = {
+							max_tokens = 56,
+							top_p = 0.9,
+							provider = {
+								-- Prioritize throughput for faster completion
+								sort = 'throughput',
+							},
+						},
+					},
+				},
+
+				gemini = {
+					optional = {
+						model = 'gemini-2.0-pro-exp-02-05',
+						generationConfig = {
+							maxOutputTokens = 256,
+							-- When using `gemini-2.5-flash`, it is recommended to entirely
+							-- disable thinking for faster completion retrieval.
+							thinkingConfig = {
+								thinkingBudget = 0,
+							},
+						},
+						safetySettings = {
+							{
+								-- HARM_CATEGORY_HATE_SPEECH,
+								-- HARM_CATEGORY_HARASSMENT
+								-- HARM_CATEGORY_SEXUALLY_EXPLICIT
+								category = 'HARM_CATEGORY_DANGEROUS_CONTENT',
+								-- BLOCK_NONE
+								threshold = 'BLOCK_ONLY_HIGH',
+							},
+						},
+					},
+				},
+			}
+		},
+		{
 			"zbirenbaum/copilot.lua",
 			opts = {
+				copilot_node_command = vim.fn.expand("$HOME") .. "/.asdf/installs/nodejs/22.14.0/bin/node",
+				disable_limit_reached_message = true,
 				panel = {
 					enabled = false,
 					auto_refresh = true,
@@ -530,12 +836,12 @@ local function setup()
 					auto_trigger = false,
 					hide_during_completion = true,
 					keymap = {
-						-- accept = "<M-l>",
-						-- accept_word = false,
-						-- accept_line = false,
-						-- next = "<M-]>",
-						-- prev = "<M-[>",
-						-- dismiss = "<C-]>",
+						accept = "<M-p>",
+						accept_word = false,
+						accept_line = false,
+						next = "<M-k>",
+						prev = "<M-j>",
+						dismiss = "<M-;>",
 					},
 				},
 				filetypes = {
@@ -564,39 +870,22 @@ local function setup()
 					typescriptreact = true,
 					javascriptreact = true,
 				},
-				copilot_node_command = 'node', -- Node.js version must be > 18.x
-				-- server_opts_overrides = {
-				-- 	advanced = {
-				-- 		-- listCount = 10,   -- #completions for panel
-				-- 		-- inlineSuggestCount = 3, -- #completions for getCompletions
-				-- 	}
-				-- },
 			},
 		},
 
-		'williamboman/mason.nvim',
-		'williamboman/mason-lspconfig.nvim',
+		-- 'williamboman/mason.nvim',
+		-- 'williamboman/mason-lspconfig.nvim',
 		'neovim/nvim-lspconfig',
 		'elentok/format-on-save.nvim',
 
 		{
 			"johmsalas/text-case.nvim",
-			config = function()
-				require("textcase").setup({})
-				require("telescope").load_extension("textcase")
-			end,
-			cmd = {
-				-- NOTE: The Subs command name can be customized via the option "substitude_command_name"
-				"Subs",
-				"TextCaseOpenTelescope",
-				"TextCaseOpenTelescopeQuickChange",
-				"TextCaseOpenTelescopeLSPChange",
-				"TextCaseStartReplacingCommand",
-			},
+			opts = {},
+			cmd = { "Subs" },
 			lazy = true,
 		},
 		{
-			'echasnovski/mini.files',
+			'nvim-mini/mini.files',
 			version = '*',
 			opts = {
 				mappings = {
@@ -617,7 +906,7 @@ local function setup()
 			}
 		},
 		{
-			'echasnovski/mini.pairs',
+			'nvim-mini/mini.pairs',
 			version = '*',
 			opts = {
 				-- In which modes mappings from this `config` should be created
@@ -655,11 +944,11 @@ local function setup()
 				local ls = require("luasnip")
 				require("luasnip.loaders.from_vscode").lazy_load()
 
-				vim.keymap.set({ "i" }, "<C-K>", function() ls.expand() end, { silent = true })
-				vim.keymap.set({ "i", "s" }, "<C-L>", function() ls.jump(1) end, { silent = true })
-				vim.keymap.set({ "i", "s" }, "<C-J>", function() ls.jump(-1) end, { silent = true })
+				vim.keymap.set({ "i" }, "<C-k>", function() ls.expand() end, { silent = true })
+				vim.keymap.set({ "i", "s" }, "<C-l>", function() ls.jump(1) end, { silent = true })
+				vim.keymap.set({ "i", "s" }, "<C-j>", function() ls.jump(-1) end, { silent = true })
 
-				vim.keymap.set({ "i", "s" }, "<C-E>", function()
+				vim.keymap.set({ "i", "s" }, "<C-e>", function()
 					if ls.choice_active() then
 						ls.change_choice(1)
 					end
@@ -667,7 +956,7 @@ local function setup()
 			end,
 		},
 		-- {
-		-- 	'echasnovski/mini.snippets',
+		-- 	'nvim-mini/mini.snippets',
 		-- 	version = '*',
 		-- 	dependencies = {
 		-- 		'brunoti/friendly-snippets'
@@ -675,48 +964,38 @@ local function setup()
 		-- 	opts = {},
 		-- },
 		{
-			'echasnovski/mini.indentscope',
-			version = '*',
-			init = function()
-				vim.g.miniindentscope_disable = true
-				require('mini.indentscope').setup({
-					symbol = "│"
-				})
-			end
-		},
-		{
 			'stevearc/overseer.nvim',
 			config = function()
 				local overseer = require 'overseer'
 				overseer.setup()
-				overseer.register_template({
-					-- Required fields
-					name = "Some Task",
-					builder = function(params)
-						-- This must return an overseer.TaskDefinition
-						return {
-							-- cmd is the only required field
-							cmd = { 'echo' },
-							-- additional arguments for the cmd
-							args = { "hello", "world" },
-							-- the name of the task (defaults to the cmd of the task)
-							name = "Greet",
-							-- set the working directory for the task
-							-- the list of components or component aliases to add to the task
-							components = { "default" },
-						}
-					end,
-					-- Optional fields
-					desc = "Optional description of task",
-					-- Tags can be used in overseer.run_template()
-					params = {
-						-- See :help overseer-params
-					},
-					priority = 50,
-					condition = {
-						filetype = { "typescriptreact" },
-					},
-				})
+				-- overseer.register_template({
+				-- 	-- Required fields
+				-- 	name = "Some Task",
+				-- 	builder = function(params)
+				-- 		-- This must return an overseer.TaskDefinition
+				-- 		return {
+				-- 			-- cmd is the only required field
+				-- 			cmd = { 'echo' },
+				-- 			-- additional arguments for the cmd
+				-- 			args = { "hello", "world" },
+				-- 			-- the name of the task (defaults to the cmd of the task)
+				-- 			name = "Greet",
+				-- 			-- set the working directory for the task
+				-- 			-- the list of components or component aliases to add to the task
+				-- 			components = { "default" },
+				-- 		}
+				-- 	end,
+				-- 	-- Optional fields
+				-- 	desc = "Optional description of task",
+				-- 	-- Tags can be used in overseer.run_template()
+				-- 	params = {
+				-- 		-- See :help overseer-params
+				-- 	},
+				-- 	priority = 50,
+				-- 	condition = {
+				-- 		filetype = { "typescriptreact" },
+				-- 	},
+				-- })
 			end
 		},
 		{
@@ -728,8 +1007,6 @@ local function setup()
 						Copilot = "",
 					},
 				})
-
-				vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#a6d189" })
 			end
 		},
 		{
@@ -764,12 +1041,27 @@ local function setup()
 					},
 					input = { enabled = true },
 					scroll = { enabled = false },
-					chunk = { enable = true },
+					chunk = { enable = true, priority = 200, only_current = true },
 					picker = {
 						enable = true,
+						ui_select = true,
 						prompt = '   ',
 						layouts = {
 							vscode = {
+								layout = {
+									width = 0.5,
+									backdrop = false,
+									row = 1,
+									min_width = 80,
+									height = 0.4,
+									border = "none",
+									box = "vertical",
+									{ win = "input",   height = 1,          border = "vpad", title = "{title} {live} {flags}", title_pos = "center" },
+									{ win = "list",    border = "none" },
+									{ win = "preview", title = "{preview}", border = "none" },
+								},
+							},
+							select = {
 								layout = {
 									width = 0.5,
 									backdrop = false,
@@ -804,135 +1096,15 @@ local function setup()
 							keymaps = { layout = { preset = 'vscode' } },
 							recent = { title = 'Most Recently Used Files' },
 						},
-						win = {
-							-- input window
-							input = {
-								keys = {
-									-- to close the picker on ESC instead of going to normal mode,
-									-- add the following keymap to your config
-									-- ["<Esc>"] = { "close", mode = { "n", "i" } },
-									["/"] = "toggle_focus",
-									["<C-Down>"] = { "history_forward", mode = { "i", "n" } },
-									["<C-Up>"] = { "history_back", mode = { "i", "n" } },
-									["<C-c>"] = { "cancel", mode = "i" },
-									["<C-w>"] = { "<c-s-w>", mode = { "i" }, expr = true, desc = "delete word" },
-									["<CR>"] = { "confirm", mode = { "n", "i" } },
-									["<Down>"] = { "list_down", mode = { "i", "n" } },
-									["<Esc>"] = "cancel",
-									["<S-CR>"] = { { "pick_win", "jump" }, mode = { "n", "i" } },
-									["<S-Tab>"] = { "select_and_prev", mode = { "i", "n" } },
-									["<Tab>"] = { "select_and_next", mode = { "i", "n" } },
-									["<Up>"] = { "list_up", mode = { "i", "n" } },
-									["<a-d>"] = { "inspect", mode = { "n", "i" } },
-									["<a-f>"] = { "toggle_follow", mode = { "i", "n" } },
-									["<a-h>"] = { "toggle_hidden", mode = { "i", "n" } },
-									["<a-i>"] = { "toggle_ignored", mode = { "i", "n" } },
-									["<a-m>"] = { "toggle_maximize", mode = { "i", "n" } },
-									["<a-p>"] = { "toggle_preview", mode = { "i", "n" } },
-									["<a-w>"] = { "cycle_win", mode = { "i", "n" } },
-									["<c-a>"] = { "select_all", mode = { "n", "i" } },
-									["<c-b>"] = { "preview_scroll_up", mode = { "i", "n" } },
-									["<c-d>"] = { "list_scroll_down", mode = { "i", "n" } },
-									["<c-f>"] = { "preview_scroll_down", mode = { "i", "n" } },
-									["<c-g>"] = { "toggle_live", mode = { "i", "n" } },
-									["<c-j>"] = { "list_down", mode = { "i", "n" } },
-									["<c-k>"] = { "list_up", mode = { "i", "n" } },
-									["<c-n>"] = { "list_down", mode = { "i", "n" } },
-									["<c-p>"] = { "list_up", mode = { "i", "n" } },
-									["<c-q>"] = { "qflist", mode = { "i", "n" } },
-									["<c-s>"] = { "edit_split", mode = { "i", "n" } },
-									["<c-t>"] = { "tab", mode = { "n", "i" } },
-									["<c-u>"] = { "list_scroll_up", mode = { "i", "n" } },
-									["<c-v>"] = { "edit_vsplit", mode = { "i", "n" } },
-									["<c-r>#"] = { "insert_alt", mode = "i" },
-									["<c-r>%"] = { "insert_filename", mode = "i" },
-									["<c-r><c-a>"] = { "insert_cWORD", mode = "i" },
-									["<c-r><c-f>"] = { "insert_file", mode = "i" },
-									["<c-r><c-l>"] = { "insert_line", mode = "i" },
-									["<c-r><c-p>"] = { "insert_file_full", mode = "i" },
-									["<c-r><c-w>"] = { "insert_cword", mode = "i" },
-									["<c-w>H"] = "layout_left",
-									["<c-w>J"] = "layout_bottom",
-									["<c-w>K"] = "layout_top",
-									["<c-w>L"] = "layout_right",
-									["?"] = "toggle_help_input",
-									["G"] = "list_bottom",
-									["gg"] = "list_top",
-									["j"] = "list_down",
-									["k"] = "list_up",
-									["q"] = "close",
-								},
-								b = {
-									minipairs_disable = true,
-								},
-							},
-							-- result list window
-							list = {
-								keys = {
-									["/"] = "toggle_focus",
-									["<2-LeftMouse>"] = "confirm",
-									["<CR>"] = "confirm",
-									["<Down>"] = "list_down",
-									["<Esc>"] = "cancel",
-									["<S-CR>"] = { { "pick_win", "jump" } },
-									["<S-Tab>"] = { "select_and_prev", mode = { "n", "x" } },
-									["<Tab>"] = { "select_and_next", mode = { "n", "x" } },
-									["<Up>"] = "list_up",
-									["<a-d>"] = "inspect",
-									["<a-f>"] = "toggle_follow",
-									["<a-h>"] = "toggle_hidden",
-									["<a-i>"] = "toggle_ignored",
-									["<a-m>"] = "toggle_maximize",
-									["<a-p>"] = "toggle_preview",
-									["<a-w>"] = "cycle_win",
-									["<c-a>"] = "select_all",
-									["<c-b>"] = "preview_scroll_up",
-									["<c-d>"] = "list_scroll_down",
-									["<c-f>"] = "preview_scroll_down",
-									["<c-j>"] = "list_down",
-									["<c-k>"] = "list_up",
-									["<c-n>"] = "list_down",
-									["<c-p>"] = "list_up",
-									["<c-q>"] = "qflist",
-									["<c-s>"] = "edit_split",
-									["<c-t>"] = "tab",
-									["<c-u>"] = "list_scroll_up",
-									["<c-v>"] = "edit_vsplit",
-									["<c-w>H"] = "layout_left",
-									["<c-w>J"] = "layout_bottom",
-									["<c-w>K"] = "layout_top",
-									["<c-w>L"] = "layout_right",
-									["?"] = "toggle_help_list",
-									["G"] = "list_bottom",
-									["gg"] = "list_top",
-									["i"] = "focus_input",
-									["j"] = "list_down",
-									["k"] = "list_up",
-									["q"] = "close",
-									["zb"] = "list_scroll_bottom",
-									["zt"] = "list_scroll_top",
-									["zz"] = "list_scroll_center",
-								},
-								wo = {
-									conceallevel = 2,
-									concealcursor = "nvc",
-								},
-							},
-							-- preview window
-							preview = {
-								keys = {
-									["<Esc>"] = "cancel",
-									["q"] = "close",
-									["i"] = "focus_input",
-									["<a-w>"] = "cycle_win",
-								},
-							},
-						},
 					},
 					animation = { enabled = true },
 					bigfile = { enabled = true },
 					explorer = { enabled = true },
-					notifier = { enabled = true },
+					notifier = {
+						enabled = true,
+						level = vim.log.levels.DEBUG,
+						style = "fancy"
+					},
 					quickfile = { enabled = true },
 					statuscolumn = {
 						enabled = true,
@@ -966,18 +1138,27 @@ local function setup()
 							{ section = "header" },
 							{ section = "keys", gap = 0, padding = 2 },
 							{ pane = 2, icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
-							{ pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 2 },
+							-- { pane = 2, icon = " ", title = "Sessions", section = 'session', indent = 2, padding = 2 },
 							{ section = "startup" },
 						},
 					},
 					words = {
-						enabled = true,     -- enable/disable the plugin
+						enabled = true,      -- enable/disable the plugin
 						debounce = 200,      -- time in ms to wait before updating
 						notify_jump = false, -- show a notification when jumping
 						notify_end = true,   -- show a notification when reaching the end
 						foldopen = true,     -- open folds after jumping
 						jumplist = true,     -- set jump point before jumping
 						modes = { "n", "i", "c" }, -- modes to show references
+					},
+					zen = {
+						toggles = {
+							dim = false,
+							git_signs = false,
+							mini_diff_signs = false,
+							line_number = false,
+							indent = false,
+						}
 					},
 					styles = {
 						default = {
@@ -986,6 +1167,9 @@ local function setup()
 						notification = {
 							focusable = false,
 						},
+						zen = {
+							backdrop = { transparent = false }
+						}
 					}
 				}
 
@@ -1058,32 +1242,45 @@ local function setup()
 						Snacks.toggle.indent():map("<leader>ug")
 						Snacks.toggle.dim():map("<leader>uD")
 						Snacks.toggle.zen():map("<leader>uz")
-						Snacks.toggle({
-							name = 'mini.diff overlay',
-							get = function()
-								return require('mini.diff').get_overlay_visibility()
-							end,
-							set = function(value)
-								return require('mini.diff').set_overlay_visibility(value)
-							end,
-						}):map("<leader>ud")
-						Snacks.toggle({
-							name = 'mini.indentscope',
-							get = function()
-								return not vim.g.miniindentscope_disable
-							end,
-							set = function(value)
-								vim.g.miniindentscope_disable = value
-							end,
-						}):map("<leader>ui")
+						Snacks.toggle.indent():map("<leader>ui")
+						-- Snacks.toggle({
+						-- 	name = 'mini.diff overlay',
+						-- 	get = function()
+						-- 		return require('mini.diff').get_overlay_visibility()
+						-- 	end,
+						-- 	set = function(value)
+						-- 		return require('mini.diff').set_overlay_visibility(value)
+						-- 	end,
+						-- }):map("<leader>ud")
+						-- Snacks.toggle({
+						-- 	name = 'indent_scope',
+						-- 	get = function()
+						-- 		return not vim.g.miniindentscope_disable
+						-- 	end,
+						-- 	set = function(value)
+						-- 		vim.g.miniindentscope_disable = value
+						-- 		require("mini.indentscope").enable()
+						-- 	end,
+						-- }):map("<leader>ui")
 					end,
 				})
+
+				vim.api.nvim_create_user_command('Bang', function(opts)
+					local cmd = opts.args
+					local result = vim.fn.system('ls')
+					Snacks.notify.info(result, {
+						title = "Bang " .. cmd
+					})
+				end, { nargs = '*' })
+
+				-- Optional: Replace the default ! command
+				vim.cmd('cabbrev ! Bang')
 			end,
 		},
 		{
 			"chrisgrieser/nvim-various-textobjs",
 			lazy = false,
-			opts = { keymaps = { useDefaults = true } },
+			opts = { keymaps = { useDefaults = false } },
 		},
 		{
 			"nvim-neorg/neorg",
@@ -1100,64 +1297,6 @@ local function setup()
 			-- dependencies = {
 			--   "rcarriga/nvim-notify",
 			-- }
-		},
-		{
-			"folke/trouble.nvim",
-			specs = {
-				"folke/snacks.nvim",
-				opts = function(_, opts)
-					return vim.tbl_deep_extend("force", opts or {}, {
-						picker = {
-							actions = require("trouble.sources.snacks").actions,
-							win = {
-								input = {
-									keys = {
-										["<c-t>"] = {
-											"trouble_open",
-											mode = { "n", "i" },
-										},
-									},
-								},
-							},
-						},
-					})
-				end,
-			},
-			---@module 'trouble'
-			---@type trouble.Config
-			opts = {
-				focus = true,
-				win = {
-					type = "split",
-					position = "right",
-					size = { width = 0.35 },
-				},
-				preview = {
-					type = "split",
-					relative = "win",
-					position = "bottom",
-					size = { height = 0.35 },
-				},
-				modes = {
-					diagnostics_buffer = {
-						mode = "diagnostics", -- inherit from diagnostics mode
-						filter = { buf = 0 }, -- filter diagnostics to the current buffer
-					},
-					preview_float = {
-						mode = "diagnostics",
-						preview = {
-							type = "float",
-							relative = "editor",
-							border = "squared",
-							title = "Preview",
-							title_pos = "center",
-							position = { 0, -2 },
-							size = { width = 0.3, height = 0.3 },
-							zindex = 200,
-						},
-					},
-				}
-			},
 		},
 		{
 			'natecraddock/workspaces.nvim',
@@ -1188,6 +1327,12 @@ local function setup()
 				local my_ws_grp = vim.api.nvim_create_augroup("my_ws_grp", { clear = true })
 				vim.api.nvim_create_autocmd({ "BufEnter", "VimEnter" }, {
 					callback = function()
+						-- if starts_with(vim.bo.filetype, "Avante") then
+						-- 	vim.api.nvim_set_current_dir(get_root())
+						-- 	return
+						-- end
+
+
 						-- do nothing if not file type
 						local buf_type = vim.api.nvim_get_option_value("buftype", { buf = 0 })
 						if (buf_type ~= "" and buf_type ~= "acwrite") then
@@ -1219,7 +1364,11 @@ local function setup()
 							end
 						end
 
-						if selected_workspace then workspaces.open(selected_workspace.name) end
+						if selected_workspace then
+							require('lib').run_command("BufferLineTabRename " .. selected_workspace.name)
+							workspaces.open(selected_workspace.name)
+						end
+						-- Don't change directory if we didn't find a matching workspace
 					end,
 
 					group = my_ws_grp
@@ -1291,7 +1440,7 @@ local function setup()
 			end
 		},
 		{
-			'echasnovski/mini.surround',
+			'nvim-mini/mini.surround',
 			version = '*',
 			opts = {
 				mappings = {
@@ -1404,29 +1553,51 @@ local function setup()
 				"javascriptreact"
 			}
 		},
-		{ 'echasnovski/mini.icons', version = '*', opts = {} },
+		{ 'nvim-mini/mini.icons', version = '*', opts = {} },
 		{
-			'echasnovski/mini.diff',
+			'nvim-mini/mini.diff',
 			version = '*',
-			opts = {},
+			--- @module 'mini.diff'
+			opts = {
+				mappings = {
+					mappings = {
+						-- Apply hunks inside a visual/operator region
+						apply = 'gh',
+
+						-- Reset hunks inside a visual/operator region
+						reset = 'gH',
+
+						-- Hunk range textobject to be used inside operator
+						-- Works also in Visual mode if mapping differs from apply and reset
+						textobject = 'gh',
+
+						-- Go to hunk range in corresponding direction
+						goto_first = '[H',
+						goto_prev = '[h',
+						goto_next = ']h',
+						goto_last = ']H',
+					},
+
+				}
+			},
 			event = { "BufReadPost", "BufNewFile", "BufWritePre" }
 		},
-		{ 'echasnovski/mini-git',   version = '*', main = 'mini.git', opts = {} },
-		{ 'echasnovski/mini.ai',    version = '*', opts = {} },
+		{ 'nvim-mini/mini-git',   version = '*', main = 'mini.git', opts = {} },
+		{ 'nvim-mini/mini.ai',    version = '*', opts = {} },
 		{
-			'echasnovski/mini.align',
+			'nvim-mini/mini.align',
 			enable = false,
 			version = '*',
-			opts = { mappings = { start = 'gt', start_with_preview = 'gT', } }
+			opts = { mappings = { start = '<leader>al', start_with_preview = '<leader>aL', } }
 		},
-		{ 'echasnovski/mini.comment',   version = '*', opts = {} },
-		{ 'echasnovski/mini.splitjoin', version = '*', opts = {} },
+		{ 'nvim-mini/mini.comment',   version = '*', opts = {} },
+		{ 'nvim-mini/mini.splitjoin', version = '*', opts = {} },
 		{
 			'linrongbin16/lsp-progress.nvim',
 			opts = {},
 		},
 		{
-			'echasnovski/mini.operators',
+			'nvim-mini/mini.operators',
 			version = '*',
 			enable = false,
 			opts = {
@@ -1499,66 +1670,67 @@ local function setup()
 			"antosha417/nvim-lsp-file-operations",
 			event = "VeryLazy",
 			opts = {},
-		}, {
-		'nanozuki/tabby.nvim',
-		event = 'VeryLazy',
-		opts = {
-			icons_enabled = true,
 		},
-		config = function()
-			vim.opt.sessionoptions = 'curdir,folds,globals,help,tabpages,terminal,winsize'
-			local theme = {
-				fill = 'TabLineFill',
-				head = 'TabLine',
-				current_tab = 'TabLineSel',
-				tab = 'TabLine',
-				win = 'TabLine',
-				tail = 'TabLine',
-			}
-			require('tabby.tabline').set(function(line)
-				return {
-					{
-						{ '  ', hl = theme.head },
-						line.sep('', theme.head, theme.fill),
-					},
-					line.tabs().foreach(function(tab)
-						local hl = tab.is_current() and theme.current_tab or theme.tab
-						return {
-							line.sep('', hl, theme.fill),
-							-- tab.is_current() and '' or '󰆣',
-							tab.number(),
-							tab.current_win().buf_name(),
-							margin = '  ',
-							tab.current_win().file_icon(),
-							line.sep('', hl, theme.fill),
-							hl = hl,
-						}
-					end),
-					line.spacer(),
-					line.wins_in_tab(line.api.get_current_tab()).foreach(function(win)
-						return {
-							line.sep('', theme.win, theme.fill),
-							win.file_icon(),
-							margin = '  ',
-							-- win.is_current() and '' or '',
-							win.buf_name(),
-							line.sep('', theme.win, theme.fill),
-							hl = theme.win,
-						}
-					end),
-					{
-						line.sep('', theme.tail, theme.fill),
-						{ '  ', hl = theme.tail },
-					},
-					hl = theme.fill,
-				}
-			end, {
-				buf_name = {
-					mode = 'unique',
-				},
-			})
-		end,
-	},
+		-- 	 {
+		-- 	'nanozuki/tabby.nvim',
+		-- 	event = 'VeryLazy',
+		-- 	opts = {
+		-- 		icons_enabled = true,
+		-- 	},
+		-- 	config = function()
+		-- 		vim.opt.sessionoptions = 'curdir,folds,globals,help,tabpages,terminal,winsize'
+		-- 		local theme = {
+		-- 			fill = 'TabLineFill',
+		-- 			head = 'TabLine',
+		-- 			current_tab = 'TabLineSel',
+		-- 			tab = 'TabLine',
+		-- 			win = 'TabLine',
+		-- 			tail = 'TabLine',
+		-- 		}
+		-- 		require('tabby.tabline').set(function(line)
+		-- 			return {
+		-- 				{
+		-- 					{ '  ', hl = theme.head },
+		-- 					line.sep('', theme.head, theme.fill),
+		-- 				},
+		-- 				line.tabs().foreach(function(tab)
+		-- 					local hl = tab.is_current() and theme.current_tab or theme.tab
+		-- 					return {
+		-- 						line.sep('', hl, theme.fill),
+		-- 						-- tab.is_current() and '' or '󰆣',
+		-- 						tab.number(),
+		-- 						tab.current_win().buf_name(),
+		-- 						margin = '  ',
+		-- 						tab.current_win().file_icon(),
+		-- 						line.sep('', hl, theme.fill),
+		-- 						hl = hl,
+		-- 					}
+		-- 				end),
+		-- 				line.spacer(),
+		-- 				line.wins_in_tab(line.api.get_current_tab()).foreach(function(win)
+		-- 					return {
+		-- 						line.sep('', theme.win, theme.fill),
+		-- 						win.file_icon(),
+		-- 						margin = '  ',
+		-- 						-- win.is_current() and '' or '',
+		-- 						win.buf_name(),
+		-- 						line.sep('', theme.win, theme.fill),
+		-- 						hl = theme.win,
+		-- 					}
+		-- 				end),
+		-- 				{
+		-- 					line.sep('', theme.tail, theme.fill),
+		-- 					{ '  ', hl = theme.tail },
+		-- 				},
+		-- 				hl = theme.fill,
+		-- 			}
+		-- 		end, {
+		-- 			buf_name = {
+		-- 				mode = 'unique',
+		-- 			},
+		-- 		})
+		-- 	end,
+		-- },
 		{
 			"OlegGulevskyy/better-ts-errors.nvim",
 			ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
@@ -1588,24 +1760,150 @@ local function setup()
 				"CodeCompanionActions",
 				"CodeCompanionCmd",
 			},
+			dependencies = {
+				"ravitemer/codecompanion-history.nvim"
+			},
+			init = function()
+				-- Setup codecompanion buffer options
+				vim.api.nvim_create_autocmd({ 'BufWinEnter', 'FileType' }, {
+					pattern = "codecompanion",
+					callback = function(ev)
+						vim.schedule(function()
+							local buf = ev.buf
+							if vim.bo[buf].filetype == 'codecompanion' then
+								vim.opt_local.number = false
+								vim.opt_local.relativenumber = false
+								vim.opt_local.wrap = true
+							end
+						end)
+					end
+				})
+
+				-- codecompanion_progress_module():init()
+			end,
+			--- @module 'codecompanion'
+			--- @type CodeCompanion.Config
 			opts = {
+				extensions = {
+					mcphub = {
+						callback = "mcphub.extensions.codecompanion",
+						opts = {
+							-- MCP Tools
+							make_tools = true,             -- Make individual tools (@server__tool) and server groups (@server) from MCP servers
+							show_server_tools_in_chat = true, -- Show individual tools in chat completion (when make_tools=true)
+							add_mcp_prefix_to_tool_names = false, -- Add mcp__ prefix (e.g `@mcp__github`, `@mcp__neovim__list_issues`)
+							show_result_in_chat = true,    -- Show tool results directly in chat buffer
+							format_tool = nil,             -- function(tool_name:string, tool: CodeCompanion.Agent.Tool) : string Function to format tool names to show in the chat buffer
+							-- MCP Resources
+							make_vars = true,              -- Convert MCP resources to #variables for prompts
+							-- MCP Prompts
+							make_slash_commands = true,    -- Add MCP prompts as /slash commands
+						}
+					},
+					history = {
+						enabled = true,
+						opts = {
+							-- Keymap to open history from chat buffer (default: gh)
+							keymap = "gh",
+							-- Keymap to save the current chat manually (when auto_save is disabled)
+							save_chat_keymap = "sc",
+							-- Save all chats by default (disable to save only manually using 'sc')
+							auto_save = true,
+							-- Number of days after which chats are automatically deleted (0 to disable)
+							expiration_days = 0,
+							-- Picker interface (auto resolved to a valid picker)
+							picker = "snacks", --- ("telescope", "snacks", "fzf-lua", or "default")
+							---Optional filter function to control which chats are shown when browsing
+							chat_filter = nil, -- function(chat_data) return boolean end
+							-- Customize picker keymaps (optional)
+							picker_keymaps = {
+								rename = { n = "r", i = "<M-r>" },
+								delete = { n = "d", i = "<M-d>" },
+								duplicate = { n = "<C-y>", i = "<C-y>" },
+							},
+							---Automatically generate titles for new chats
+							auto_generate_title = true,
+							title_generation_opts = {
+								---Adapter for generating titles (defaults to current chat adapter)
+								adapter = nil,       -- "copilot"
+								---Model for generating titles (defaults to current chat model)
+								model = nil,         -- "gpt-4o"
+								---Number of user prompts after which to refresh the title (0 to disable)
+								refresh_every_n_prompts = 0, -- e.g., 3 to refresh after every 3rd user prompt
+								---Maximum number of times to refresh the title (default: 3)
+								max_refreshes = 3,
+								format_title = function(original_title)
+									-- this can be a custom function that applies some custom
+									-- formatting to the title.
+									return original_title
+								end
+							},
+							---On exiting and entering neovim, loads the last chat on opening chat
+							continue_last_chat = false,
+							---When chat is cleared with `gx` delete the chat from history
+							delete_on_clearing_chat = false,
+							---Directory path to save the chats
+							dir_to_save = vim.fn.stdpath("data") .. "/codecompanion-history",
+							---Enable detailed logging for history extension
+							enable_logging = false,
+
+							-- Summary system
+							summary = {
+								-- Keymap to generate summary for current chat (default: "gcs")
+								create_summary_keymap = "gcs",
+								-- Keymap to browse summaries (default: "gbs")
+								browse_summaries_keymap = "gbs",
+
+								generation_opts = {
+									adapter = nil,      -- defaults to current chat adapter
+									model = nil,        -- defaults to current chat model
+									context_size = 90000, -- max tokens that the model supports
+									include_references = true, -- include slash command content
+									include_tool_outputs = true, -- include tool execution results
+									system_prompt = nil, -- custom system prompt (string or function)
+									format_summary = nil, -- custom function to format generated summary e.g to remove <think/> tags from summary
+								},
+							},
+
+							-- Memory system (requires VectorCode CLI)
+							memory = {
+								-- Automatically index summaries when they are generated
+								auto_create_memories_on_summary_generation = true,
+								-- Path to the VectorCode executable
+								vectorcode_exe = "vectorcode",
+								-- Tool configuration
+								tool_opts = {
+									-- Default number of memories to retrieve
+									default_num = 10
+								},
+								-- Enable notifications for indexing progress
+								notify = true,
+								-- Index all existing memories on startup
+								-- (requires VectorCode 0.6.12+ for efficient incremental indexing)
+								index_on_startup = false,
+							},
+						},
+					},
+				},
 				strategies = {
-					chat = {
-						adapter = "copilot",
-					},
-					inline = {
-						adapter = "copilot",
-					},
+					chat = { adapter = "openrouter_qwen" },
+					inline = { adapter = "openrouter_qwen" },
+					cmd = { adapter = "openrouter_qwen" }
 				},
 				display = {
 					chat = {
 						window = {
-							layout = 'float',
+							layout = 'vertical',
+							position = 'right',
+							width = 0.35,
+							opts = {
+								wrap = false
+							}
 						},
 						intro_message = "",
 					},
 					action_pallete = {
-						provider = 'default'
+						provider = 'snacks'
 					}
 				},
 				slash_commands = {
@@ -1614,21 +1912,115 @@ local function setup()
 					}
 				},
 				diff = {
-					enabled = false,
-					close_chat_at = 240,
-					layout = "vertical",
-					opts = { "internal", "filler", "closeoff", "algorithm:patience", "followwrap", "linematch:120" },
+					enabled = true,
 					provider = "mini_diff",
 				},
-			},
-		},
-		{
-			"OXY2DEV/markview.nvim",
-			lazy = false,
-			opts = {
-				preview = {
-					filetypes = { "markdown", "codecompanion" },
-					ignore_buftypes = {},
+				action_palette = {
+					provider = "snacks",
+				},
+				prompt_library = {
+					["80 chars max"] = {
+						strategy = "inline",
+						description = "Limit to 80 characters",
+						opts = {
+							short_name = "80_chars",
+							auto_submit = true,
+							stop_context_insertion = true,
+							user_prompt = false,
+						},
+						prompts = {
+							{
+								role = "user",
+								content = function(context)
+									local text = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+
+									return "I have the following text:\n\n```" ..
+											text ..
+											"\n```\n\nReorganize it to be less than 80 characters per line without changing its content, and replace the selection with that.\n\n"
+								end,
+								opts = {
+									contains_code = true,
+								}
+							}
+						}
+					},
+					["Try Catch"] = {
+						strategy = "inline",
+						description = "Wrap in try/catch",
+						opts = {
+							short_name = "try_catch",
+							auto_submit = true,
+							stop_context_insertion = true,
+							user_prompt = false,
+						},
+						prompts = {
+							{
+								role = "user",
+								content = function(context)
+									local text = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
+
+									return "I have the following code:\n\n```" ..
+											context.filetype ..
+											"\n" ..
+											text ..
+											"\n```\n\nWrap it in a try/catch block, log the error and throw again. Make sure the language supports the new code.\n\n"
+								end,
+								opts = {
+									contains_code = true,
+								}
+							}
+						}
+					}
+				},
+				adapters = {
+					http = {
+						copilot = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = {
+									model = {
+										default = "claude-3.7-sonnet",
+									},
+								},
+							})
+						end,
+						copilot_mini = function()
+							return require("codecompanion.adapters").extend("copilot", {
+								schema = {
+									model = {
+										default = "gemini-2.0-flash-001",
+									},
+								},
+							})
+						end,
+						openrouter_qwen = function()
+							return require("codecompanion.adapters").extend("openai_compatible", {
+								env = {
+									url = "https://openrouter.ai/api",
+									api_key = "OPENROUTER_API_KEY",
+									chat_url = "/v1/chat/completions",
+								},
+								schema = {
+									model = {
+										default = "qwen/qwen3-coder-flash",
+									},
+								},
+							})
+						end,
+						openrouter = function()
+							return require("codecompanion.adapters").extend("openai_compatible", {
+								env = {
+									url = "https://openrouter.ai/api",
+									api_key = "OPENROUTER_API_KEY",
+									chat_url = "/v1/chat/completions",
+								},
+								schema = {
+									model = {
+										default = "anthropic/claude-3.7-sonnet",
+									},
+								},
+							})
+						end,
+					},
 				},
 			},
 		},
@@ -1971,9 +2363,33 @@ local function setup()
 		{
 			"CopilotC-Nvim/CopilotChat.nvim",
 			build = "make tiktoken", -- Only on MacOS or Linux
+			---@module 'CopilotChat'
+			---@type CopilotChat.config.Config
 			opts = {
-				-- See Configuration section for options
+				model = 'claude-3.5-sonnet',
+				separator = ' ',
+				window = {
+					layout = 'vertical', -- 'vertical', 'horizontal', 'float', 'replace', or a function that returns the layout
+					width = 0.3,    -- fractional width of parent, or absolute width in columns when > 1
+					height = 0.3,   -- fractional height of parent, or absolute height in rows when > 1
+				},
+				headers = {
+					user = '  User', -- Header to use for user questions
+					assistant = '  Copilot', -- Header to use for AI answers
+					tool = '  Tool', -- Header to use for tool calls
+				},
 			},
+			init = function()
+				vim.api.nvim_create_autocmd('BufEnter', {
+					pattern = 'copilot-*',
+					callback = function()
+						vim.opt_local.relativenumber = false
+						vim.opt_local.number = false
+						vim.opt_local.conceallevel = 0
+						vim.b.completion = false
+					end,
+				})
+			end,
 			cmd = {
 				'CopilotChat',
 				'CopilotChatOpen',
@@ -1998,10 +2414,14 @@ local function setup()
 		},
 		{
 			"folke/tokyonight.nvim",
+			enabled = true,
 			lazy = false,
 			priority = 1000,
+			init = function()
+				vim.cmd.colorscheme('tokyonight')
+			end,
 			opts = {
-				style = 'storm',
+				style = 'night',
 				styles = {
 					-- Style to be applied to different syntax groups
 					-- Value is any valid attr-list value for `:help nvim_set_hl`
@@ -2016,63 +2436,68 @@ local function setup()
 				dim_inactive = true, -- dims inactive windows
 				lualine_bold = true,
 				on_highlights = function(highlights, colors)
-					local tokyo_colors                 = require('tokyonight.colors').setup()
-					local input_bg                     = tokyo_colors.bg_highlight
-					local input_fg                     = tokyo_colors.fg
-					local float_bg                     = tokyo_colors.bg_sidebar
-					local float_fg                     = tokyo_colors.fg
-					local title_bg                     = tokyo_colors.blue7
-					local title_fg                     = tokyo_colors.orange
+					local tokyo_colors                     = require('tokyonight.colors').setup()
+					local input_bg                         = tokyo_colors.bg_highlight
+					local input_fg                         = tokyo_colors.fg
+					local float_bg                         = tokyo_colors.bg_sidebar
+					local float_fg                         = tokyo_colors.fg
+					local title_bg                         = tokyo_colors.blue7
+					local title_fg                         = tokyo_colors.orange
 
-					highlights.SnacksPickerInput       = { bg = input_bg, fg = input_fg }
-					highlights.SnacksPickerInputBorder = { bg = input_bg, fg = input_fg }
-					highlights.SnacksPickerInputBorder = { bg = input_bg, fg = input_bg }
+					-- highlights.SnacksPickerInput             = { bg = input_bg, fg = input_fg }
+					-- highlights.SnacksPickerInputBorder       = { bg = input_bg, fg = input_fg }
+					-- highlights.SnacksPickerInputBorder       = { bg = input_bg, fg = input_bg }
+					--
+					-- highlights.SnacksPickerPrompt            = { bg = input_bg, fg = tokyo_colors.orange }
+					--
+					-- highlights.SnacksPickerBoxBorder         = { bg = float_bg, fg = float_bg }
+					--
+					-- -- highlights.FloatBorder                   = { bg = input_bg, fg = input_bg }
+					-- -- highlights.NormalFloat                   = { bg = input_bg, fg = tokyo_colors.fg }
+					-- highlights.WhichKeyBorder                = { bg = float_bg, fg = float_bg }
+					--
+					-- highlights.SnacksPickerList              = { bg = float_bg }
+					-- highlights.SnacksPickerListCursorLine    = { bg = tokyo_colors.blue7 }
+					--
+					-- highlights.SnacksPickerPreviewBorder     = { bg = float_bg, fg = float_bg }
+					--
+					-- highlights.SnacksPickerBoxTitle          = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.SnacksPickerInputTitle        = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.SnacksPickerPreviewTitle      = { bg = title_bg, fg = title_fg, bold = true }
+					--
+					-- highlights.SnacksInputTitle              = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.SnacksInputBorder             = { bg = input_bg, fg = input_bg }
+					-- highlights.SnacksInput                   = { bg = input_bg, fg = input_fg }
+					-- highlights.SnacksInputNormal             = { bg = input_bg, fg = input_fg }
+					--
+					-- highlights.NoiceCmdlinePopupBorder       = { bg = input_bg, fg = input_bg }
+					-- highlights.NoiceCmdlinePopup             = { bg = input_bg, fg = input_fg }
+					-- highlights.NoiceCmdlinePopupBorderLua    = { bg = input_bg, fg = input_bg }
+					-- highlights.NoiceCmdlinePrompt            = { bg = input_bg, fg = input_fg }
+					-- highlights.NoiceCmdlineTitle             = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.NoicePopupTitleInput          = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.NoicePopupTitleLua            = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.NoiceCmdlinePopupBorderSearch = { bg = input_bg, fg = input_bg }
+					-- highlights.NoiceCmdlinePopupTitleSearch  = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.NoiceCmdlinePopupTitleLua     = { bg = title_bg, fg = title_fg, bold = true }
+					-- highlights.NoicePopupTitleLua            = { bg = title_bg, fg = title_fg, bold = true }
+					--
+					-- highlights.WinBar                        = { bg = tokyo_colors.bg, fg = tokyo_colors.fg }
 
-					highlights.SnacksPickerPrompt      = { bg = input_bg, fg = tokyo_colors.orange }
+					-- highlights.NavicText                     = { bg = tokyo_colors.bg, fg = tokyo_colors.fg, bold = false }
+					highlights.NavicSeparator              = { bg = tokyo_colors.bg, fg = tokyo_colors.fg_gutter, bold = true }
 
-					highlights.SnacksPickerBoxBorder   = { bg = float_bg, fg = float_bg }
+					highlights.BlinkCmpItemKindMinuet      = { fg = tokyo_colors.blue }
+					highlights.BlinkCmpKindText            = { fg = tokyo_colors.red }
+					highlights.BlinkCmpKindAvante          = { fg = tokyo_colors.blue }
+					highlights.BlinkCmpKindAvanteCmd       = { fg = tokyo_colors.blue }
+					highlights.BlinkCmpKindAvanteMention   = { fg = tokyo_colors.blue }
+					highlights.BlinkCmpSource              = { fg = tokyo_colors.fg_gutter }
 
+					highlights.MiniHipatternsBiomeIgnore   = { bg = '#DDDDFF', fg = tokyo_colors.blue, bold = true, italic = false }
+					highlights.MiniHipatternsTsExpectError = { bg = '#FFDDDD', fg = tokyo_colors.orange, bold = true, italic = false }
+					highlights.MiniHipatternsTsIgnore      = { bg = '#DDFFDD', fg = tokyo_colors.green, bold = true, italic = false }
 
-					highlights.SnacksPickerList              = { bg = float_bg }
-					highlights.SnacksPickerListCursorLine    = { bg = tokyo_colors.blue7 }
-
-					highlights.SnacksPickerPreviewBorder     = { bg = float_bg, fg = float_bg }
-
-					highlights.SnacksPickerBoxTitle          = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.SnacksPickerInputTitle        = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.SnacksPickerPreviewTitle      = { bg = title_bg, fg = title_fg, bold = true }
-
-					highlights.NoiceCmdlinePopupBorder       = { bg = input_bg, fg = input_bg }
-					highlights.NoiceCmdlinePopup             = { bg = input_bg, fg = input_fg }
-					highlights.NoiceCmdlinePopupBorderLua    = { bg = input_bg, fg = input_bg }
-					highlights.NoiceCmdlinePrompt            = { bg = input_bg, fg = input_fg }
-					highlights.NoiceCmdlineTitle             = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.NoicePopupTitleInput          = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.NoicePopupTitleLua            = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.NoiceCmdlinePopupBorderSearch = { bg = input_bg, fg = input_bg }
-					highlights.NoiceCmdlinePopupTitleSearch  = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.NoiceCmdlinePopupTitleLua     = { bg = title_bg, fg = title_fg, bold = true }
-					highlights.NoicePopupTitleLua            = { bg = title_bg, fg = title_fg, bold = true }
-
-					highlights.MiniHipatternsBiomeIgnore     = { bg = '#FFFFFF', fg = tokyo_colors.red, bold = true, italic = false }
-
-					local function test()
-						local tokyo_colors = require('tokyonight.colors').setup()
-						-- local input_bg = '#23273b'
-						-- local input_fg = '#C0CAF5'
-
-						local input_bg = tokyo_colors.bg_search
-						local input_fg = tokyo_colors.fg
-
-						vim.api.nvim_set_hl(0, 'SnacksPickerInputBorder', { bg = input_bg, fg = input_bg })
-						vim.api.nvim_set_hl(0, 'NoiceCmdlinePopupBorder', { bg = input_bg, fg = input_bg })
-						vim.api.nvim_set_hl(0, 'NoiceCmdlinePopup', { bg = input_bg, fg = input_bg })
-						vim.api.nvim_set_hl(0, 'NoiceCmdlinePopupBorderLua', { bg = input_bg, fg = input_bg })
-						vim.api.nvim_set_hl(0, 'NoiceCmdlinePopup', { bg = input_bg, fg = input_bg })
-						vim.api.nvim_set_hl(0, 'NoiceCmdlinePrompt', { bg = input_bg, fg = input_fg })
-					end
-
-					-- test()
 
 					-- Colors for Snacks pickers
 					-- highlights.SnacksPickerBoxTitle = { bg = '#1c99f2', fg = '#ffffff', bold = true }
@@ -2089,22 +2514,80 @@ local function setup()
 					-- highlights.NoiceCmdline = { bg = '#23273b', }
 				end,
 			},
-			init = function()
-				vim.cmd.colorscheme('tokyonight')
-			end
+		},
+		{
+			"idr4n/github-monochrome.nvim",
+			lazy = false,
+			priority = 1000,
+			opts = {},
+		},
+		{
+			"catppuccin/nvim",
+			enabled = false,
+			name = "catppuccin",
+			priority = 1000,
+			opts = {
+				flavour = "auto", -- latte, frappe, macchiato, mocha
+				background = { -- :h background
+					light = "latte",
+					dark = "mocha",
+				},
+				transparent_background = false, -- disables setting the background color.
+				float = {
+					transparent = false,      -- enable transparent floating windows
+					solid = false,            -- use solid styling for floating windows, see |winborder|
+				},
+				show_end_of_buffer = false, -- shows the '~' characters after the end of buffers
+				term_colors = false,        -- sets terminal colors (e.g. `g:terminal_color_0`)
+				dim_inactive = {
+					enabled = false,          -- dims the background color of inactive window
+					shade = "dark",
+					percentage = 0.15,        -- percentage of the shade to apply to the inactive window
+				},
+				no_italic = false,          -- Force no italic
+				no_bold = false,            -- Force no bold
+				no_underline = false,       -- Force no underline
+				styles = {                  -- Handles the styles of general hi groups (see `:h highlight-args`):
+					comments = { "italic" },  -- Change the style of comments
+					conditionals = { "italic" },
+					loops = {},
+					functions = { "italic" },
+					keywords = {},
+					strings = {},
+					variables = {},
+					numbers = {},
+					booleans = {},
+					properties = {},
+					types = {},
+					operators = {},
+					-- miscs = {}, -- Uncomment to turn off hard-coded styles
+				},
+				color_overrides = {},
+				custom_highlights = {},
+				default_integrations = true,
+				auto_integrations = false,
+				integrations = {
+					cmp = true,
+					gitsigns = true,
+					nvimtree = true,
+					treesitter = true,
+					notify = false,
+					mini = {
+						enabled = true,
+						indentscope_color = "",
+					},
+					-- For more plugins integrations please scroll down (https://github.com/catppuccin/nvim#integrations)
+				},
+			}
 		},
 		{
 			"pmizio/typescript-tools.nvim",
-		},
-		{
-			's1n7ax/nvim-window-picker',
-			name = 'window-picker',
-			event = 'VeryLazy',
-			version = '2.*',
 			opts = {
-				hint = 'statusline-winbar',
-				selection_chars = 'asdfghjkl;',
-				show_prompt = false,
+				on_attach = function(client, bufnr)
+					-- Disable formatting since Biome handles it
+					client.server_capabilities.documentFormattingProvider = false
+					client.server_capabilities.documentRangeFormattingProvider = false
+				end,
 			},
 		},
 		{
@@ -2117,28 +2600,301 @@ local function setup()
 			}
 		},
 		{
-			'echasnovski/mini.hipatterns',
+			'nvim-mini/mini.hipatterns',
 			version = '*',
 			config = function()
 				local hipatterns = require('mini.hipatterns')
 				hipatterns.setup({
 					highlighters = {
-						fixme        = { pattern = '%f[%w]()FIXME()%f[%W]', group = 'MiniHipatternsFixme' },
-						hack         = { pattern = '%f[%w]()HACK()%f[%W]', group = 'MiniHipatternsHack' },
-						todo         = { pattern = '%f[%w]()TODO()%f[%W]', group = 'MiniHipatternsTodo' },
-						note         = { pattern = '%f[%w]()NOTE()%f[%W]', group = 'MiniHipatternsNote' },
-						biome_ignore = { pattern = '%f[%S]biome%-ignore%f[%s]', group = 'MiniHipatternsBiomeIgnore' },
-						hex_color    = hipatterns.gen_highlighter.hex_color(),
+						fixme           = { pattern = '%f[%w]()FIXME()%f[%W]', group = 'MiniHipatternsFixme' },
+						hack            = { pattern = '%f[%w]()HACK()%f[%W]', group = 'MiniHipatternsHack' },
+						todo            = { pattern = '%f[%w]()TODO()%f[%W]', group = 'MiniHipatternsTodo' },
+						note            = { pattern = '%f[%w]()NOTE()%f[%W]', group = 'MiniHipatternsNote' },
+						biome_ignore    = { pattern = '%f[%S]biome%-ignore%f[%s]', group = 'MiniHipatternsBiomeIgnore' },
+						ts_expect_error = { pattern = '%f[%S]@ts%-expect%-error%f[%s]', group = 'MiniHipatternsTsExpectError' },
+						ts_ignore       = { pattern = '%f[%S]@ts%-ignore%f[%s]', group = 'MiniHipatternsTsIgnore' },
+						hex_color       = hipatterns.gen_highlighter.hex_color(),
 					},
 				})
 			end
 		},
 		{
+			"yetone/avante.nvim",
+			enabled = false,
+			event = "VeryLazy",
+			version = false, -- Never set this value to "*"! Never!
+			build = "make",
+			dependencies = {
+				{
+					-- support for image pasting
+					"HakonHarnes/img-clip.nvim",
+					event = "VeryLazy",
+					opts = {
+						default = {
+							embed_image_as_base64 = false,
+							prompt_for_file_name = false,
+							drag_and_drop = {
+								insert_mode = true,
+							},
+							use_absolute_path = false,
+						},
+					},
+				},
+			},
+			---@module "avante"
+			---@type avante.Config
+			opts = {
+				provider = "copilot",
+				rules = {
+					project_dir = '.cursor/rules',
+					global_dir = '~/.avante/rules',
+				},
+				system_prompt = function()
+					local hub = require("mcphub").get_hub_instance()
+					return hub and hub:get_active_servers_prompt() or ""
+				end,
+				-- Using function prevents requiring mcphub before it's loaded
+				custom_tools = function()
+					return {
+						require("mcphub.extensions.avante").mcp_tool(),
+					}
+				end,
+				web_search_engine = {
+					provider = "tavily",
+				},
+				hints = {
+					enabled = false
+				},
+				mappings = {
+					ask = "<leader>ak",
+					edit = "<leader>ae",
+					refresh = "<leader>ao",
+					focus = "<leader>af",
+					stop = "<leader>aS",
+					toggle = {
+						default = "<leader>at",
+						debug = "<leader>ad",
+						hint = "<leader>ah",
+						suggestion = "<leader>as",
+						repomap = "<leader>aR",
+					},
+				},
+				behaviour = {
+					use_cwd_as_root = true,
+				},
+				disabled_tools = {
+					"list_files", -- Built-in file operations
+					"search_files",
+					"read_file",
+					"create_file",
+					"rename_file",
+					"delete_file",
+					"create_dir",
+					"rename_dir",
+					"delete_dir",
+					"bash", -- Built-in terminal access
+				},
+			},
+			init = function()
+				-- local avante_group = vim.api.nvim_create_augroup("Avante", { clear = true })
+				-- vim.api.nvim_create_autocmd({ "BufEnter", "VimEnter" }, {
+				-- 	group = avante_group,
+				-- 	callback = function()
+				-- 		if starts_with(vim.bo.filetype, "Avante") then
+				-- 			vim.api.nvim_set_current_dir(get_root())
+				-- 		end
+				-- 	end,
+				-- })
+			end,
+		},
+		{ 'akinsho/git-conflict.nvim',        version = "*", setup = {} },
+		{
+			"Exafunction/windsurf.nvim",
+			opts = {},
+			config = function()
+				require("codeium").setup({
+					enable_chat = false,
+					enable_cmp_source = false,
+				})
+			end
+		},
+		-- {
+		-- 	'romgrk/barbar.nvim',
+		-- 	dependencies = {
+		-- 		'lewis6991/gitsigns.nvim',
+		-- 	},
+		-- 	init = function() vim.g.barbar_auto_setup = false end,
+		-- 	opts = {
+		-- 		auto_hide = true,
+		-- 		letters = 'asdfghjkl;',
+		-- 		icons = {
+		-- 			buffer_index = true,
+		-- 			separator = { left = '▎', right = '' },
+		-- 			modified = { button = '󰽂 ' },
+		-- 		},
+		-- 	},
+
+		-- },
+		{
+			'akinsho/bufferline.nvim',
+			opts = {
+				options = {
+					themable = true,
+					numbers = function(opts)
+						return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
+					end,
+					diagnostics = "nvim_lsp",
+					max_name_length = 25,
+					-- separator_style = "slant",
+					indicator = {
+						icon = '',
+						style = 'icon',
+					},
+					pick = {
+						alphabet = "asdfghjkl;1234567890",
+					},
+					diagnostics_indicator = function(count, level, diagnostics_dict, context)
+						if context.buffer:current() then
+							local icon = level:match("error") and "  " or "  "
+							return " " .. icon .. count
+						end
+						return ""
+					end
+				}
+			}
+		},
+		{
+			"tiagovla/scope.nvim",
+			opts = {}
+		},
+		{
 			"tpope/vim-abolish",
 			cmd = { "Abolish", "S", "Subvert" },
+		},
+		{
+			"j-hui/fidget.nvim",
+			lazy = true,
+		},
+		{
+			"folke/persistence.nvim",
+			lazy = false,
+			enabled = false,
+			opts = {}
+		},
+		{
+			"mistweaverco/kulala.nvim",
+			keys = {
+				{ "<leader>Rs", desc = "Send request" },
+				{ "<leader>Ra", desc = "Send all requests" },
+				{ "<leader>Rb", desc = "Open scratchpad" },
+			},
+			ft = { "http", "rest" },
+			opts = {
+				additional_curl_options = { "--insecure" },
+				global_keymaps = true,
+				global_keymaps_prefix = "<leader>R",
+				kulala_keymaps_prefix = "<leader>K",
+			},
+		},
+		{
+			'lewis6991/gitsigns.nvim',
+			opts = {}
+		},
+		{
+			"NeogitOrg/neogit",
+			cmd = {
+				"Neogit"
+			},
+			opts = {}
+		},
+		{
+			"folke/flash.nvim",
+			event = "VeryLazy",
+			---@type Flash.Config
+			opts = {},
+			-- stylua: ignore
+			keys = {
+				{ "S",          mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash" },
+				{ "<M-s>",      mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash" },
+				{ "<M-;>",      mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+				{ "<c-s><c-s>", mode = { "c" },           function() require("flash").toggle() end,     desc = "Toggle Flash Search" },
+			},
+		},
+		{
+			"ravitemer/mcphub.nvim",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+			},
+			build = "npm install -g mcp-hub@latest", -- Installs `mcp-hub` node binary globally
+			config = function()
+				require("mcphub").setup({
+					port = 6767,
+					mcp_request_timeout = 600000,
+					extansions = {
+						avante = {
+							make_slash_commands = true,
+						}
+					}
+				})
+			end
+		},
+		{
+			"Davidyz/VectorCode",
+			version = "*",
+			build = "uv tool upgrade vectorcode", -- This helps keeping the CLI up-to-date
+			-- build = "pipx upgrade vectorcode", -- If you used pipx to install the CLI
+			dependencies = { "nvim-lua/plenary.nvim" },
+			opts = {},
+		},
+		{ 'dmmulroy/ts-error-translator.nvim' },
+		{
+			"aserowy/tmux.nvim",
+			config = function()
+				require('tmux').setup({
+					navigation = {
+						enable_default_keybindings = false,
+					},
+					resize = {
+						enable_default_keybindings = false,
+					},
+					swap = {
+						enable_default_keybindings = false,
+					}
+				})
+			end,
+		},
+		{
+			"stevearc/aerial.nvim",
+			opts = {
+				on_attach = function(bufnr)
+					-- Jump forwards/backwards with '{' and '}'
+					vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
+					vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
+				end,
+			}
+		},
+		{
+			"wnkz/monoglow.nvim",
+			enabled = false,
+			lazy = false,
+			priority = 1000,
+			opts = {},
+			init = function()
+				vim.cmd.colorscheme('monoglow')
+			end
+		},
+		{
+			"slugbyte/lackluster.nvim",
+			enabled = false,
+			lazy = false,
+			priority = 1000,
+			init = function()
+				vim.cmd.colorscheme('lackluster-dark')
+			end,
 		}
 	})
 end
+
 
 
 
@@ -2204,13 +2960,234 @@ end
 
 
 -- Map the function to a visual mode keybinding
-vim.keymap.set('v', '<space>=', run_selected_code, { noremap = true, silent = true })
-vim.keymap.set('v', '<space>--', function()
-	vim.print(get_visual_selection())
-end, { noremap = true, silent = true })
+-- vim.keymap.set('v', '<space>=', run_selected_code, { noremap = true, silent = true })
+-- vim.keymap.set('v', '<space>--', function()
+-- 	vim.print(get_visual_selection())
+-- end, { noremap = true, silent = true })
 
 
+--- Retrieves the root directory of the current Git repository or falls back to a specified directory.
+--- @param opts? table: A table containing options for the function.
+--- @return string: The root directory of the Git repository or the fallback directory.
+function _G.get_root(opts)
+	opts = opts or {}
+	local path = vim.fn.system("git rev-parse --show-toplevel")
 
+	if path:sub(1, 1) == "/" then
+		return trim(path)
+	end
+
+	local fallback = opts.fallback or vim.fn.getcwd()
+	return trim(fallback)
+end
+
+function _G.codecompanion_progress_module()
+	local progress = require("fidget.progress")
+
+	local M = {}
+
+	function M:init()
+		local group = vim.api.nvim_create_augroup("CodeCompanionFidgetHooks", {})
+
+		vim.api.nvim_create_autocmd({ "User" }, {
+			pattern = "CodeCompanionRequestStarted",
+			group = group,
+			callback = function(request)
+				local handle = M:create_progress_handle(request)
+				M:store_progress_handle(request.data.id, handle)
+			end,
+		})
+
+		vim.api.nvim_create_autocmd({ "User" }, {
+			pattern = "CodeCompanionRequestFinished",
+			group = group,
+			callback = function(request)
+				local handle = M:pop_progress_handle(request.data.id)
+				if handle then
+					M:report_exit_status(handle, request)
+					handle:finish()
+				end
+			end,
+		})
+	end
+
+	M.handles = {}
+
+	function M:store_progress_handle(id, handle)
+		M.handles[id] = handle
+	end
+
+	function M:pop_progress_handle(id)
+		local handle = M.handles[id]
+		M.handles[id] = nil
+		return handle
+	end
+
+	function M:create_progress_handle(request)
+		return progress.handle.create({
+			title = "  Requesting assistance (" .. request.data.strategy .. ")",
+			message = "In progress...",
+			lsp_client = {
+				name = M:llm_role_title(request.data.adapter),
+			},
+		})
+	end
+
+	function M:llm_role_title(adapter)
+		local parts = {}
+		table.insert(parts, adapter.formatted_name)
+		if adapter.model and adapter.model ~= "" then
+			table.insert(parts, "(" .. adapter.model .. ")")
+		end
+		return table.concat(parts, " ")
+	end
+
+	function M:report_exit_status(handle, request)
+		if request.data.status == "success" then
+			handle.message = "Completed"
+		elseif request.data.status == "error" then
+			handle.message = "  Error"
+		else
+			handle.message = "󰜺  Cancelled"
+		end
+	end
+
+	return M
+end
+
+function _G.codecompanion_progress_module()
+	local progress = require("fidget.progress")
+
+	local M = {}
+
+	function M:init()
+		local group = vim.api.nvim_create_augroup("CodeCompanionFidgetHooks", {})
+
+		vim.api.nvim_create_autocmd({ "User" }, {
+			pattern = "CodeCompanionRequestStarted",
+			group = group,
+			callback = function(request)
+				local handle = M:create_progress_handle(request)
+				M:store_progress_handle(request.data.id, handle)
+			end,
+		})
+
+		vim.api.nvim_create_autocmd({ "User" }, {
+			pattern = "CodeCompanionRequestFinished",
+			group = group,
+			callback = function(request)
+				local handle = M:pop_progress_handle(request.data.id)
+				if handle then
+					M:report_exit_status(handle, request)
+					handle:finish()
+				end
+			end,
+		})
+	end
+
+	M.handles = {}
+
+	function M:store_progress_handle(id, handle)
+		M.handles[id] = handle
+	end
+
+	function M:pop_progress_handle(id)
+		local handle = M.handles[id]
+		M.handles[id] = nil
+		return handle
+	end
+
+	function M:create_progress_handle(request)
+		return progress.handle.create({
+			title = "  Requesting assistance (" .. request.data.strategy .. ")",
+			message = "In progress...",
+			lsp_client = {
+				name = M:llm_role_title(request.data.adapter),
+			},
+		})
+	end
+
+	function M:llm_role_title(adapter)
+		local parts = {}
+		table.insert(parts, adapter.formatted_name)
+		if adapter.model and adapter.model ~= "" then
+			table.insert(parts, "(" .. adapter.model .. ")")
+		end
+		return table.concat(parts, " ")
+	end
+
+	function M:report_exit_status(handle, request)
+		if request.data.status == "success" then
+			handle.message = "Completed"
+		elseif request.data.status == "error" then
+			handle.message = "  Error"
+		else
+			handle.message = "󰜺  Cancelled"
+		end
+	end
+
+	return M
+end
+
+function _G.starts_with(str, start)
+	return str:sub(1, #start) == start
+end
+
+function _G.trim(str)
+	return str:match("^%s*(.-)%s*$")
+end
+
+function lualine_codecompanion_spinner()
+	local M = require("lualine.component"):extend()
+
+	M.processing = false
+	M.spinner_index = 1
+
+	local spinner_symbols = {
+		"⠋",
+		"⠙",
+		"⠹",
+		"⠸",
+		"⠼",
+		"⠴",
+		"⠦",
+		"⠧",
+		"⠇",
+		"⠏",
+	}
+	local spinner_symbols_len = 10
+
+	-- Initializer
+	function M:init(options)
+		M.super.init(self, options)
+
+		local group = vim.api.nvim_create_augroup("CodeCompanionHooks", {})
+
+		vim.api.nvim_create_autocmd({ "User" }, {
+			pattern = "CodeCompanionRequest*",
+			group = group,
+			callback = function(request)
+				if request.match == "CodeCompanionRequestStarted" then
+					self.processing = true
+				elseif request.match == "CodeCompanionRequestFinished" then
+					self.processing = false
+				end
+			end,
+		})
+	end
+
+	-- Function that runs every time statusline is updated
+	function M:update_status()
+		if self.processing then
+			self.spinner_index = (self.spinner_index % spinner_symbols_len) + 1
+			return spinner_symbols[self.spinner_index]
+		else
+			return nil
+		end
+	end
+
+	return M
+end
 
 return {
 	setup = setup,

@@ -162,5 +162,6 @@ end
 
 M.merge = vim.tbl_extend
 M.merge_deep = vim.tbl_extend_deep
+M.noop = function() end
 
 return M
