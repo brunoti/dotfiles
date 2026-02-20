@@ -1,7 +1,9 @@
+-- Not required by current config; treesitter is configured in lua/plugins.lua.
+-- If you require this module, prefer a language list over "all" to avoid high memory/disk use.
 return {
 	setup = function()
 		require('nvim-treesitter.configs').setup {
-			ensure_installed = "all",
+			ensure_installed = "all", -- consider e.g. { "lua", "vim", "javascript", "typescript", ... }
 			context_commentstring = {
 				enable = true
 			},

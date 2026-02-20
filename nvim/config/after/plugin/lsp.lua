@@ -41,12 +41,21 @@ local formatters = require('format-on-save.formatters')
 
 --- Get LSP client capabilities with completion and blink support
 local function get_capabilities()
-  local _, cmp = pcall(require, 'cmp_nvim_lsp')
-  local _, blink = pcall(require, 'blink.cmp')
-  if blink then return blink.get_lsp_capabilities() end
-  if cmp then return cmp.default_capabilities() end
+  local __get = function()
+    local _, cmp = pcall(require, 'cmp_nvim_lsp')
+    local _, blink = pcall(require, 'blink.cmp')
 
-  return vim.lsp.protocol.make_client_capabilities()
+    if blink then return blink.get_lsp_capabilities() end
+    if cmp then return cmp.default_capabilities() end
+
+    return vim.lsp.protocol.make_client_capabilities()
+  end
+
+  local cap = __get()
+
+  cap.textDocument.completion.completionItem.snippetSupport = true
+
+  return cap;
 end
 
 local capabilities = get_capabilities()
@@ -62,18 +71,23 @@ end
 -- =============================================================================
 
 -- Choose TypeScript LSP: "vtsls" or "ts_ls"
-local typescript_lsp = "vtsls" -- Change to "ts_ls" to use official TypeScript server
+local typescript_lsp = "ts_ls" -- Change to "vtsls" for full refactoring support
 
--- Performance mode: Enables aggressive optimizations for large projects
+-- Performance mode: Enables aggressive optimizations for large projects (and lower memory).
 -- When true: Disables autoimports, suggestions, and expensive processing for maximum speed
 --             BUT keeps essential features: hover, go-to-definition, references, rename
 -- When false: Full features enabled (autoimports, completions, suggestions, etc.)
+-- See reports/nvim-memory-investigation.md for full memory analysis.
 local performance_mode = false
 
+vim.lsp.config('jsonls', {
+  capabilities = capabilities,
+})
 
--- Register TypeScript Language Server (official)
+
+-- Register TypeScript Language Server (official); use asdf shim so it runs with asdf's Node
 vim.lsp.config.ts_ls = {
-  cmd = { "typescript-language-server", "--stdio" },
+  cmd = { os.getenv('HOME') .. '/.asdf/shims/typescript-language-server', '--stdio' },
   filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
   root_markers = { 'tsconfig.json', 'jsconfig.json', '.git', 'package.json' },
   capabilities = capabilities,
@@ -396,20 +410,20 @@ vim.lsp.config.vtsls = {
         enable = {
           -- Keep essential features, disable only expensive ones
           semanticHighlighting = false,
-          completion = true,        -- Always keep completion
-          hover = true,             -- Always keep hover (essential!)
-          signatureHelp = true,     -- Always keep signature help
-          definition = true,        -- Always keep go-to-definition (essential!)
-          references = true,        -- Always keep references (essential!)
+          completion = true,       -- Always keep completion
+          hover = true,            -- Always keep hover (essential!)
+          signatureHelp = true,    -- Always keep signature help
+          definition = true,       -- Always keep go-to-definition (essential!)
+          references = true,       -- Always keep references (essential!)
           documentHighlight = false,
-          documentSymbol = true,    -- Always keep for navigation
-          workspaceSymbol = false,  -- Expensive in large projects
-          codeAction = true,        -- Always keep code actions
+          documentSymbol = true,   -- Always keep for navigation
+          workspaceSymbol = false, -- Expensive in large projects
+          codeAction = true,       -- Always keep code actions
           codeLens = false,
           documentFormatting = false,
           documentRangeFormatting = false,
           documentOnTypeFormatting = false,
-          rename = true,            -- Always keep rename (essential!)
+          rename = true, -- Always keep rename (essential!)
           foldingRange = false,
           selectionRange = false,
           linkedEditingRange = false,
@@ -560,7 +574,7 @@ vim.lsp.config('lua_ls', {
 
 -- Enable LSP servers
 vim.lsp.enable('biome');
--- vim.lsp.enable(typescript_lsp); -- Disabled: using typescript-tools.nvim instead
+vim.lsp.enable(typescript_lsp);
 vim.lsp.enable('lua_ls');
 
 -- =============================================================================
@@ -572,17 +586,17 @@ vim.api.nvim_create_augroup("lsp_diagnostics_hold", { clear = true })
 vim.api.nvim_create_autocmd({ "CursorHold" }, {
   pattern = "*",
   callback = function()
-    -- Check if a floating window is already open
-    local win_exists = false
+    -- Do not open diagnostic float if any float is already open (e.g. hover)
+    local float_open = false
     for _, win in ipairs(vim.api.nvim_list_wins()) do
       local config = vim.api.nvim_win_get_config(win)
-      if config.border then
-        win_exists = true
+      if config.relative ~= "" then
+        float_open = true
         break
       end
     end
 
-    if not win_exists then
+    if not float_open then
       vim.diagnostic.open_float(nil, {
         scope = "cursor",
         focusable = false,
@@ -625,7 +639,6 @@ vim.diagnostic.config({
 
 -- Advanced performance optimizations
 vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx)
-  require("ts-error-translator").translate_diagnostics(err, result, ctx)
   vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx)
 end
 

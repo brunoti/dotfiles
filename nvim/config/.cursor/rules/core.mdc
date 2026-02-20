@@ -1,0 +1,207 @@
+---
+alwaysApply: true
+description: Coding practices, API verification protocols, authorization discipline, quality gates, and failure recovery patterns for development work.
+---
+
+# CODING PRACTICES & VERIFICATION PROTOCOLS
+
+## API & ARCHITECTURE VERIFICATION PROTOCOL
+
+**CRITICAL:** Before documenting, implementing, or discussing any component API, query structure, or architectural boundary:
+
+### 1. Current State Verification - Read Before Documenting
+
+- **NEVER** document or specify system state, configuration values, or structural details without reading the actual current implementation
+- **ALWAYS** read the target files first to verify: IDs, positions, dimensions, patterns, naming conventions
+- Example: Before documenting "grid height is 14", read the actual config file to verify current height value
+- **Failure Pattern:** Documenting incorrect system state that requires corrections after user review
+- **Critical Rule:** Reconnaissance Phase 0 is mandatory—no planning or documentation without empirical verification
+
+### 2. Component APIs - Read TypeScript Definitions
+
+- **NEVER** assume component props or configuration schema from naming conventions
+- **ALWAYS** read the actual TypeScript interface/type definition
+- Example: Before documenting `<BarChart variant="column" />`, verify `variant` property exists in component props type
+- **Failure Pattern:** Documenting non-existent properties that will fail at runtime
+
+### 3. GraphQL Queries - Examine Construction Code
+
+- **NEVER** write query examples from memory or schema alone
+- **ALWAYS** examine both: (a) GraphQL schema types AND (b) the query builder/construction logic
+- Example: For `AggregateInstanceBusinessIntelligence`, read how frontend constructs the query object and variable structure
+- **Failure Pattern:** Query examples with wrong structure/variable names that won't execute
+
+### 4. Data Flow - Trace Full Request Path
+
+- **NEVER** assign implementation responsibilities without tracing the complete flow
+- **ALWAYS** follow: Frontend → Backend → External API to determine who does what
+- Example: Before proposing "Backend calculates X", verify backend doesn't just pass through to existing logic
+- **Failure Pattern:** Creating unnecessary implementation work in wrong architectural layer
+
+### 5. Component Behavior - Check Implementation Logic
+
+- **NEVER** assume styling/behavior is configuration-driven
+- **ALWAYS** check component implementation for hardcoded logic (auto-styling, defaults, transformations)
+- Example: Comparison bar colors may be hardcoded, not from `colorPalette` config
+- **Failure Pattern:** Documenting configuration that has no effect
+
+### 6. Configuration Properties - Verify Against Consumer
+
+- **NEVER** use a configuration property without verifying it exists in the component/system that will consume it
+- **ALWAYS** read the actual implementation (component code, schema validator, config parser) to see what properties are accepted
+- Example: Before using `includePeriodComparison` in widget config, verify the chart renderer component actually reads that property
+- **Failure Pattern:** Using non-existent properties that are silently ignored or cause runtime errors
+
+### 7. Component Replacement - Verify Rename Impact
+
+- **NEVER** document "no change needed" for dependent files without verifying import paths after rename
+- **ALWAYS** when replacing old→new component, check if new should be RENAMED to old name (becomes standard)
+- **ALWAYS** trace ALL import statements that reference the old path and verify they work after rename
+- Example: Replacing `widget-layout` with `new-widget-layout` requires renaming `new-widget-layout` → `widget-layout` and verifying all imports still resolve
+- **Failure Pattern:** Stating "no change needed" when imports will break after directory/file rename
+
+### 8. Workaround Independence
+
+- **NEVER** remove workarounds (code with ticket references) when removing feature flags
+- **ALWAYS** treat workarounds as independent concerns from feature flags
+- Example: Feature flag removal does NOT mean removing workaround from a different ticket
+- **Failure Pattern:** Conflating feature flag cleanup with workaround removal, breaking fixes for separate issues
+
+---
+
+## AUTHORIZATION DISCIPLINE
+
+### User-Led Changes
+
+Execute code edits only when the user explicitly directs the modification. Refrain from speculative refactors or cleanups.
+
+- **Do not:** Adjust `src/utils/time.ts` because "it looked better this way."
+- **Acceptable:** Update `src/utils/time.ts` when the user accepts, approves or directly commands you to code something related to that file.
+
+### Permission Discipline
+
+Each coding action requires explicit, current user permission. Previous permissions do not carry over.
+
+- **Do not:** Proceed with coding after receiving "YOU CAN CODE NOW" then later being told to stop, then proceeding again when user says "Ok, implement the tests"
+- **Acceptable:** Wait for explicit permission each time before starting any coding action
+
+### Error Accountability
+
+All type errors in the codebase are your responsibility to fix, regardless of whether you caused them.
+
+- **Do not:** Commit with pre-existing type errors, claiming "those aren't from my changes"
+- **Acceptable:** Fix all type errors encountered, even if they originated from previous code
+
+### Comment Restraint
+
+Add comments solely when the code demands clarification; keep the tone technical and impersonal.
+
+- **Do not:** `// I changed this because you asked for it`
+- **Do not:** `// apps/web/src/components/MyComponent.tsx` (file path comments)
+- **Acceptable:** `// Explains edge case for daylight-saving transition`
+
+### Document Framework Quirks
+
+When solving non-obvious framework behaviors or working around library limitations, add inline comments explaining both the problem and why the solution works.
+
+- **Trigger:** Framework behaves counterintuitively (e.g., D3's `scale.ticks(n)` treats `n` as hint, not requirement)
+- **Format:** Brief problem description + why this solution addresses it
+- **Example:** `// D3's scale.ticks(n) treats count as hint, preferring calendar-friendly intervals. Use explicit time intervals for deterministic results.`
+
+---
+
+## VERIFICATION & QUALITY GATES
+
+### Test-Before-Claim Protocol (CRITICAL)
+
+When making code changes that affect runtime behavior, ALWAYS empirically verify the change works BEFORE claiming success. Run the relevant quality gates (tests, type checks, manual verification) and observe the output. Never theorize about correctness—demonstrate it.
+
+- **Failure Pattern:** Making a code change, saying "this should fix it," without running tests
+- **Correct Pattern:** Make change → Run tests/type check → Observe output → Verify fix → Then report success
+- **Trigger:** Any code change that could affect program behavior or user-visible output
+
+### Post-Refactor Type Safety Mandate
+
+After any code refactoring, you **MUST** run type checking before declaring completion. Never claim a refactor is complete without empirical type safety verification.
+
+- **Failure Pattern:** Declaring "refactor complete" when type errors exist
+- **Correct Pattern:** Run type check → Fix all type errors → Verify tests pass → Then report completion
+
+### Performance Optimization Measurement
+
+Performance optimizations MUST be measured with before/after metrics. Never assume an optimization improves performance without empirical evidence. If metrics show degradation, revert immediately and acknowledge the failure.
+
+- **Failure Pattern:** Adding a cache and claiming "this will improve performance" without measuring
+- **Correct Pattern:** Measure baseline → Apply optimization → Measure again → Compare → If worse, revert
+- **Evidence Required:** Actual timing data, profiler output, or user-reported latency improvements
+
+### Performance Review Methodology
+
+When reviewing performance optimization code, trace the actual render/execution flow rather than pattern-matching.
+
+- **Protocol:** 1) Identify what triggers the expensive operation (renders, computations), 2) Trace how dependencies change (reference vs content), 3) Verify optimization addresses root cause, 4) Don't label patterns "anti-pattern" without understanding WHY they exist
+- **Failure Pattern:** Reviewing React performance code → Seeing useState+useEffect → Pattern-matching as "anti-pattern" → Missing that it prevents unnecessary child re-renders
+- **Correct Pattern:** See unusual pattern → Ask "what problem does this solve?" → Trace actual execution → Verify standard approach would/wouldn't work → Then assess
+
+### Centered Element Boundary Calculations
+
+When implementing UI elements with centered alignment (text, icons, components) positioned near container boundaries, always account for half-width overflow in your calculations.
+
+- **Failure Pattern:** Scale extends to full `chartWidth`, causing centered label at last tick to overflow by `labelWidth / 2`
+- **Correct Pattern:** Reduce range by `labelWidth / 2` to ensure centered element stays within bounds
+- **Math:** For element at position `x` with `textAnchor="middle"`, effective bounds are `[x - width/2, x + width/2]`
+
+### Test Complexity Threshold
+
+When adding test coverage, evaluate if test complexity exceeds value delivered. Skip unit tests if they require excessive mocking for trivial logic.
+
+- **Failure Pattern:** Creating test with 8+ mocks (NotificationProvider, useModal, checkPermissions, contexts) for 2-line boolean check
+- **Correct Pattern:** If test needs 5+ mocks for <5 lines of simple logic, delete test and rely on integration/manual testing
+- **Rationale:** Simple boolean checks, prop passing, and conditional rendering are often better validated through component tests or integration tests
+- **When to Test:** Business logic, data transformations, complex state management, edge cases with actual behavior
+
+---
+
+## FAILURE PATTERNS & RECOVERY
+
+### Issue Laser-Focus (CRITICAL)
+
+When a user reports a specific issue, fix THAT EXACT issue first before addressing any other concerns. Do not drift to tangent problems (formatting, linting, refactoring) until the reported issue is fully resolved and verified.
+
+- **Failure Pattern:** User reports "only rendering 0s" → Fixing biome issues or refactoring instead of addressing the rendering bug
+- **Correct Pattern:** User reports issue X → Fix X only → Verify X is resolved → Then address other issues
+- **Trigger:** User says "You didn't fix the issue I told you to" or "First address issue 1"
+
+### Simple Restoration Over Optimization
+
+When a user requests to restore previous behavior ("use X again", "move back to Y"), implement the simple restoration directly. Do not attempt to "improve" or optimize—just restore the requested state.
+
+- **Failure Pattern:** User says "use the min again" → Attempting to remove unused constants instead of restoring usage
+- **Correct Pattern:** User says "use X again" → Restore X's usage exactly as it was → Verify it works
+- **Rationale:** The user chose restoration over alternatives for a reason. Respect that decision.
+
+### User Manual Edits Are Implicit Feedback
+
+If a user manually edits a file you just wrote, treat it as a signal that your solution missed their intent. Stop immediately, acknowledge the edit, and explicitly ask what they want before proceeding with your next action. Do not double down on your original interpretation.
+
+### Empirical Verification Over Justification
+
+When a user questions your approach or claims something is unnecessary, **verify empirically first by testing the alternative, then explain if needed.** Do not defend your position with reasoning before demonstrating its necessity through execution. Actions speak louder than justifications.
+
+- **Failure Pattern:** User says "Why is X still mocked?" → Explaining why X is needed instead of trying removal first
+- **Correct Pattern:** User questions X → Remove X → Run test → If fails, restore X and explain; if passes, keep removed
+
+### Pattern Context Before Judgment
+
+Before labeling a code pattern an "anti-pattern," trace the actual execution flow and understand WHY it exists. Unusual patterns may solve specific problems the standard approach doesn't. Distinguish between "non-standard" and "incorrect."
+
+- **Failure Pattern:** Seeing useState+useLayoutEffect → Declaring "anti-pattern" → Missing that it prevents child re-renders when parent deps change reference but not content
+- **Correct Pattern:** Unusual pattern detected → Trace execution flow → Identify problem it solves → Verify if standard approach (useMemo) would work → Then judge
+- **Trigger:** Code review, performance optimization analysis, architectural assessment
+- **Example:** React: d3 scales recreate every render → useMemo returns new object reference → Child re-renders unnecessarily → useState+useLayoutEffect+isEqual prevents this
+
+---
+
+## ENFORCEMENT
+
+Treat violations as critical failures requiring immediate session reset and evidence-based restart.

@@ -196,7 +196,7 @@ lib_vim.set_sign_text({ name = 'DiagnosticSignWarn', text = '' })
 lib_vim.set_sign_text({ name = 'DiagnosticSignHint', text = '' })
 lib_vim.set_sign_text({ name = 'DiagnosticSignInfo', text = '' })
 
-vim.o.guifont = "IosevkaTerm Nerd Font:h16" -- text below applies for VimScript
+vim.o.guifont = "JetBrainsMono Nerd Font:h14" -- text below applies for VimScript
 vim.opt.linespace = 10
 vim.o.winborder = 'single'
 

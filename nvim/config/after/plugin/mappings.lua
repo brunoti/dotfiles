@@ -1,3 +1,9 @@
+--- Keymap Configuration
+-- This file defines all keymaps for Neovim using which-key.nvim.
+-- Helper functions for keymap processing are located in app.mapping_helpers.
+--
+-- @see app.mapping_helpers
+
 if vim.g.vscode then return end
 
 local lib = require('lib')
@@ -5,6 +11,7 @@ local _ = require('lib.fp')
 local pred = require('lib.predicate')
 local app_workspace = require "app.workspace"
 local wk = require("which-key")
+local mapping_helpers = require("app.mapping_helpers")
 
 vim.keymap.set({ 'n', 'x' }, 's', '<Nop>')
 
@@ -15,21 +22,8 @@ _G.buffer_calls = {
 	only = function() Snacks.bufdelete.other() end,
 }
 
-function is_dashboard()
-	return vim.bo.filetype == "snacks_dashboard"
-end
-
-_G.code_companion_call = function()
-	Snacks.input({
-		icon = "󱝁 ",
-		backdrop = true,
-		prompt = "What do you want do?",
-	}, function(value)
-		if value and value ~= "" then
-			lib.run_command("'<,'>CodeCompanion #{buffer} " .. value)
-		end
-	end)
-end
+-- Utility functions are now in app.mapping_helpers
+_G.code_companion_call = mapping_helpers.code_companion_call
 
 -- Set leader keys
 vim.g.mapleader = " "
@@ -50,379 +44,142 @@ local FILETYPE_MAP = {
 	CODE_COMPANION = "codecompanion"
 }
 
--- Keymaps table with descriptions and file patterns (single level)
-local KEYMAPS = {
-	-- Disable the leader key by itself
-	[" "]              = { mode = { "" }, cmd = function() end, desc = "Disable leader key" },
+-- Keymaps converted to which-key format
+-- Note: Leader key disable is handled by which-key's default behavior
 
-	-- Map jj and kk as <Esc> for faster exit from insert mode
-	["jj"]             = { mode = { "i" }, cmd = function() vim.cmd.stopinsert() end, desc = "Escape from insert mode (jj)" },
+-- Map jj as <Esc> for faster exit from insert mode
+wk.add({
+	"jj",
+	function() vim.cmd.stopinsert() end,
+	mode = { "i" },
+	desc = "Escape from insert mode (jj)",
+})
 
-	-- Neovim Tree bindings
-	["<C-N>"]          = { mode = { "n" }, cmd = function() vim.cmd.NvimTreeToggle() end, desc = "Toggle NvimTree" },
-	-- ["<C-T>"]          = { mode = { "n" }, cmd = function() vim.cmd.NvimTreeFindFile() end, desc = "Find current file in NvimTree" },
+-- Clear search highlighting with 2x <leader>
+wk.add({
+	"<space><space>",
+	function() vim.cmd.nohlsearch() end,
+	mode = { "n" },
+	desc = "Clear search highlighting",
+})
 
-	["L"]              = { mode = { "n" }, cmd = function() vim.cmd.tabnext() end, desc = "Go to next tab" },
-	["H"]              = { mode = { "n" }, cmd = function() vim.cmd.tabprevious() end, desc = "Go to previous tab" },
+-- Indentation helpers (normal and visual modes)
+wk.add({
+	"<Tab>",
+	function() vim.cmd.normal(">>") end,
+	mode = { "n" },
+	desc = "Indent line(s)",
+})
 
-	-- Clear search highlighting with 2x <leader>
-	["<space><space>"] = { mode = { "n" }, cmd = function() vim.cmd.nohlsearch() end, desc = "Clear search highlighting" },
+wk.add({
+	"<Tab>",
+	function() vim.cmd.normal(">gv") end,
+	mode = { "v" },
+	desc = "Indent line(s)",
+})
 
-	-- Indentation helpers (normal and visual modes)
-	["<Tab>"]          = {
-		mode = { "n", "v" },
-		cmd = {
-			n = function() vim.cmd.normal(">>") end,  -- Normal mode command
-			v = function() vim.cmd.normal(">gv") end, -- Visual mode command
-		},
-		desc = "Indent line(s)",
-	},
-	[";"]              = {
-		mode = { "n", "v" },
-		cmd = function()
-			vim.api.nvim_feedkeys("c", 'n', false) -- Insert search register content
-		end,
-		desc = "alternative to [c]hange",
-		noremap = true,
-		silent = true,
-	},
-	["<S-Tab>"]        = {
-		mode = { "n", "v" },
-		cmd = {
-			n = function() vim.cmd.normal("<<") end,  -- Normal mode command
-			v = function() vim.cmd.normal("<gv") end, -- Visual mode command
-		},
-		desc = "Unindent line(s)",
-	},
+wk.add({
+	"<S-Tab>",
+	function() vim.cmd.normal("<<") end,
+	mode = { "n" },
+	desc = "Unindent line(s)",
+})
 
-	-- Visual star and # search (escaped for special characters)
-	["*"]              = {
-		mode = { "v" },
-		cmd = function()
-			local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
-			vim.cmd.normal("y")                                 -- Yank selection to default register
-			vim.cmd.search(string.format("\\V%s", search_term)) -- Search for the escaped term
-		end,
-		desc = "Visual star search (escaped)",
-	},
-	["#"]              = {
-		mode = { "v" },
-		cmd = function()
-			local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
-			vim.cmd.normal("y")                                                       -- Yank selection to default register
-			vim.cmd.search(string.format("\\V%s", search_term), { backwards = true }) -- Search backwards
-		end,
-		desc = "Visual # search (escaped)",
-	},
+wk.add({
+	"<S-Tab>",
+	function() vim.cmd.normal("<gv") end,
+	mode = { "v" },
+	desc = "Unindent line(s)",
+})
 
-	-- Escape from terminal mode
-	["<Esc>"]          = { mode = { "t" }, cmd = function() vim.cmd.stopinsert() end, desc = "Escape from terminal mode" },
+-- Visual star and # search (escaped for special characters)
+wk.add({
+	"*",
+	function()
+		local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
+		vim.cmd.normal("y")                               -- Yank selection to default register
+		vim.cmd.search(string.format("\\V%s", search_term)) -- Search for the escaped term
+	end,
+	mode = { "v" },
+	desc = "Visual star search (escaped)",
+})
 
-	-- Neotest mappings with descriptions for which-key
-	-- ["<leader>t"]      = { mode = { "n" }, group = "Neotest" }, -- Group for Neotest
-	-- ["<leader>tt"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').summary() end,
-	-- 	desc = "Open test summary",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
-	--
-	-- -- Test mappings (applied only to test files)
-	-- ["<leader>tr"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').run.run() end,
-	-- 	desc = "Run nearest test",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
-	-- ["<leader>tf"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').run.run(vim.fn.expand('%')) end,
-	-- 	desc = "Run test file",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
-	-- ["<leader>to"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').output.open() end,
-	-- 	desc = "Show test output",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
-	-- ["<leader>ts"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').run.stop() end,
-	-- 	desc = "Stop running tests",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
-	-- ["<leader>td"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() require('neotest').run.run({ strategy = 'dap' }) end,
-	-- 	desc = "Debug nearest test",
-	-- 	file_pattern = TEST_FILE_PATTERN,
-	-- },
+wk.add({
+	"#",
+	function()
+		local search_term = vim.fn.escape(vim.fn.getreg('"'), '/')
+		vim.cmd.normal("y")                                                     -- Yank selection to default register
+		vim.cmd.search(string.format("\\V%s", search_term), { backwards = true }) -- Search backwards
+	end,
+	mode = { "v" },
+	desc = "Visual # search (escaped)",
+})
 
-	-- Show which-key help for buffer-local mappings
-	["<leader>?"]      = {
+-- Escape from terminal mode
+wk.add({
+	"<Esc>",
+	function() vim.cmd.stopinsert() end,
+	mode = { "t" },
+	desc = "Escape from terminal mode",
+})
+
+-- Show which-key help for buffer-local mappings
+wk.add({
+	"<leader>?",
+	function()
+		require("which-key").show({ global = false })
+	end,
+	mode = { "n" },
+	desc = "Buffer Local Keymaps (which-key)",
+})
+
+-- Notifications group
+wk.add({
+	"<leader>n",
+	group = "Notifications",
+	mode = { "n" },
+	{
+		"<leader>nn",
+		Snacks.notifier.show_history,
 		mode = { "n" },
-		cmd = function()
-			require("which-key").show({ global = false })
-		end,
-		desc = "Buffer Local Keymaps (which-key)",
-	},
-
-	-- Replace the word under the cursor with the word from the search register
-	-- ["<leader>rr"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		vim.api.nvim_feedkeys(":%s/", 'n', false)                                                         -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r><C-w>', true, false, true), 'n', false) -- Insert search register content
-	-- 		vim.api.nvim_feedkeys("//g", 'n', false)                                                          -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Left><Left>', true, false, true), 'n', false) -- Insert search register content
-	-- 	end,
-	-- 	desc = "Replace word under cursor with search register"
-	-- },
-	-- ["<leader>rs"]     = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		vim.api.nvim_feedkeys(":%S/", 'n', false)                                                         -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r><C-w>', true, false, true), 'n', false) -- Insert search register content
-	-- 		vim.api.nvim_feedkeys("//g", 'n', false)                                                          -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Left><Left>', true, false, true), 'n', false) -- Insert search register content
-	-- 	end,
-	-- 	desc = "Replace word under cursor with search register (case sensitive)"
-	-- },
-
-	-- Replace the visually selected text with the word from the search register
-	-- ["<leader>rR"]     = {
-	-- 	mode = { "x" },
-	-- 	cmd = function()
-	-- 		vim.api.nvim_feedkeys("\"ay:%s/", 'n', false)                                                     -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r>', true, false, true), 'n', false)     -- Insert search register content
-	-- 		vim.api.nvim_feedkeys("a//g", 'n', false)                                                         -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Left><Left>', true, false, true), 'n', false) -- Insert search register content
-	-- 	end,
-	-- 	desc = "Replace visual selection with search register"
-	-- },
-	-- ["<leader>rS"]     = {
-	-- 	mode = { "x" },
-	-- 	cmd = function()
-	-- 		vim.api.nvim_feedkeys("\"ay:%S/", 'n', false)                                                     -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r>', true, false, true), 'n', false)     -- Insert search register content
-	-- 		vim.api.nvim_feedkeys("a//g", 'n', false)                                                         -- Insert search register content
-	-- 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Left><Left>', true, false, true), 'n', false) -- Insert search register content
-	-- 	end,
-	-- 	desc = "Replace visual selection with search register (case sensitive)"
-	-- },
-
-
-	-- Open a new tab with the given file
-	-- ["<leader>t"]   = { mode = { "n" }, group = "Tabs", desc = "Tabs" },
-	-- ["<leader>to"]  = { mode = { "n" }, cmd = function() lib.start_command("tabedit") end, desc = "Open file in new tab" },
-	-- ["<leader>tn"]  = { mode = { "n" }, cmd = function() vim.cmd.tabnext() end, desc = "Go to next tab" },
-	-- ["<leader>tp"]  = { mode = { "n" }, cmd = function() vim.cmd.tabprevious() end, desc = "Go to previous tab" },
-	-- ["<leader>tq"]  = { mode = { "n" }, cmd = function() vim.cmd.tabonly() end, desc = "Close all other tabs" },
-	-- ["[t"]             = { mode = { "n" }, cmd = function() vim.cmd.tabprevious() end, desc = "Go to previous tab" },
-	-- ["]t"]             = { mode = { "n" }, cmd = function() vim.cmd.tabnext() end, desc = "Go to next tab" },
-
-	-- Toggle terminal
-
-	-- ["<leaderkxx"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble diagnostics toggle") end,
-	-- 	desc = "Diagnostics (Trouble)"
-	-- },
-	-- ["<leader>xX"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble diagnostics toggle filter.buf=0") end,
-	-- 	desc = "Buffer Diagnostics (Trouble)"
-	-- },
-	-- ["<leader>cs"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble symbols toggle focus=false") end,
-	-- 	desc = "Symbols (Trouble)"
-	-- },
-	-- ["<leader>cl"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble lsp toggle focus=false win.position=right") end,
-	-- 	desc = "LSP Definitions / references / ... (Trouble)"
-	-- },
-	-- ["<leader>xL"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble loclist toggle") end,
-	-- 	desc = "Location List (Trouble)"
-	-- },
-	-- ["<leader>xQ"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function() vim.cmd("Trouble qflist toggle") end,
-	-- 	desc = "Quickfix List (Trouble)"
-	-- },
-	["<leader>n"]  = { mode = { "n" }, group = "Notifications", desc = "" },
-	["<leader>nn"] = {
-		mode = { "n" },
-		cmd  = Snacks.notifier.show_history,
 		desc = "Snacks: show notification history"
 	},
-	["<leader>nq"] = {
+	{
+		"<leader>nq",
+		Snacks.notifier.hide,
 		mode = { "n" },
-		cmd  = Snacks.notifier.hide,
 		desc = "Snacks: hide all notifications"
 	},
+})
 
-	--- Group for file related mappings
-	-- ["<leader>f"]  = { mode = { "n" }, group = "File", desc = "" },
-	-- ["<leader>fc"] = { mode = { "n" }, cmd = function() lib.start_command("CtrSF") end, desc = "Open CtrSF fuzzy finder" },
-	-- ["<leader>fG"] = { mode = { "n" }, cmd = function() Snacks.picker.grep() end, desc = "Snacks: Open live grep" },
-	-- ["<leader>fb"] = { mode = { "n" }, cmd = function() Snacks.picker.buffers() end, desc = "Snacks: Open buffers" },
-	-- ["<leader>f,"] = { mode = { "n" }, cmd = function() Snacks.picker.git_files() end, desc = "Snacks: Open git files" },
-	-- ["<leader>ff"] = { mode = { "n" }, cmd = function() Snacks.picker.files() end, desc = "Snacks: Find files" },
-	-- ["<leader>fg"] = { mode = { "n" }, cmd = function() Snacks.picker.grep({ need_search = false, live = false }) end, desc = "Snacks: Open normal grep" },
-	-- ["<leader>fr"] = { mode = { "n" }, cmd = function() Snacks.picker.recent({ filter = { cwd = vim.fn.getcwd() } }) end, desc = "Snacks: Recent files (workspaces)" },
-	-- ["<leader>fy"] = { mode = { "n" }, cmd = lib.copy_file_name, desc = "Copy file path to clipboard" },
-
-	--- Group for pickers
-	-- ["<leader>s"]  = { mode = { "n" }, group = "Pickers", desc = "General pickers" },
-	-- ["<space>sc"]  = {
-	--   mode = { "n" },
-	--   cmd  = function() Snacks.picker.command_history() end,
-	--   desc = "Snacks: show command history"
-	-- },
-	-- ["<leader>sf"] = {
-	--   mode = { "n" },
-	--   cmd = function() Snacks.picker.files() end,
-	--   desc = "Snacks: Open file finder"
-	-- },
-	-- ["<leader>s,"] = {
-	--   mode = { "n" },
-	--   cmd = function() Snacks.picker.git_files() end,
-	--   desc = "Snacks: Open git files"
-	-- },
-	-- ["<leader>sb"] = { mode = { "n" }, cmd = function() Snacks.picker.lines() end, desc = "Buffer Lines" },
-	-- ["<leader>sB"] = { mode = { "n" }, cmd = function() Snacks.picker.grep_buffers() end, desc = "Grep Open Buffers" },
-	-- ["<leader>sg"] = { mode = { "n" }, cmd = function() Snacks.picker.grep() end, desc = "Grep" },
-	-- ["<leader>sw"] = {
-	--   mode = { "n" },
-	--   cmd  = app_workspace.picker,
-	--   desc = "Workspace picker"
-	-- },
-	-- ['<leader>s"'] = { mode = { "n" }, cmd = function() Snacks.picker.registers() end, desc = "Registers" },
-	-- ["<leader>sa"] = { mode = { "n" }, cmd = function() Snacks.picker.autocmds() end, desc = "Autocmd" },
-	-- ["<leader>yc"] = { mode = { "n" }, cmd = function() Snacks.picker.command_history() end, desc = "Command History" },
-	-- ["<leader>sC"] = { mode = { "n" }, cmd = function() Snacks.picker.commands() end, desc = "Commands" },
-	-- ["<leader>sd"] = { mode = { "n" }, cmd = function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
-	-- ["<leader>sh"] = { mode = { "n" }, cmd = function() Snacks.picker.help() end, desc = "Help Pages" },
-	-- ["<leader>sH"] = { mode = { "n" }, cmd = function() Snacks.picker.highlights() end, desc = "Highlights" },
-	-- ["<leader>sj"] = { mode = { "n" }, cmd = function() Snacks.picker.jumps() end, desc = "Jumps" },
-	-- ["<leader>sk"] = { mode = { "n" }, cmd = function() Snacks.picker.keymaps() end, desc = "Keymaps" },
-	-- ["<leader>sl"] = { mode = { "n" }, cmd = function() Snacks.picker.loclist() end, desc = "Location List" },
-	-- ["<leader>sM"] = { mode = { "n" }, cmd = function() Snacks.picker.man() end, desc = "Man Pages" },
-	-- ["<leader>sm"] = { mode = { "n" }, cmd = function() Snacks.picker.marks() end, desc = "Marks" },
-	-- ["<leader>sR"] = { mode = { "n" }, cmd = function() Snacks.picker.resume() end, desc = "Resume" },
-	-- ["<leader>sq"] = { mode = { "n" }, cmd = function() Snacks.picker.qflist() end, desc = "Quickfix List" },
-	-- ["<leader>ss"] = { mode = { "n" }, cmd = function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols" },
-
-
-	--- Git helpers
-	-- ["<leader>g"]  = { mode = { "n" }, group = "Git", desc = "Git and Lazygit stuff" },
-	-- ["<leader>gc"] = { mode = { "n" }, cmd = function() Snacks.picker.git_log() end, desc = "Git Log" },
-	-- ["<leader>gs"] = { mode = { "n" }, cmd = function() Snacks.picker.git_status() end, desc = "Git Status" },
-	-- ["<leader>gg"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		Snacks.lazygit()
-	-- 	end,
-	-- 	desc = "Open Lazygit"
-	-- },
-	-- ["<leader>gf"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		Snacks.lazygit.log()
-	-- 	end,
-	-- 	desc = "Open Lazygit log"
-	-- },
-	-- ["<leader>gb"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		Snacks.git.blame_line()
-	-- 	end,
-	-- 	desc = "Open blame line"
-	-- },
-	-- ["<leader>gB"] = {
-	-- 	mode = { "n" },
-	-- 	cmd = function()
-	-- 		Snacks.gitbrowse()
-	-- 	end,
-	-- 	desc = "Git browse!"
-	-- },
-}
-
-local function get_cmd(keymap, mode)
-	if not pred.has_key("cmd", keymap) then
-		return nil
-	end
-
-	if pred.is_function(keymap.cmd) then
-		return keymap.cmd
-	end
-
-	if pred.has_key(mode, keymap.cmd) then
-		return keymap.cmd[mode]
-	end
-
-	return nil
-end
-
--- Function to set keymaps with file pattern, function support, and which-key integration
-local function set_keymaps(keymaps)
-	for key, keymap_data in pairs(keymaps) do
-		-- If file_pattern is a table, create an autocmd for each pattern
-		if type(keymap_data.file_pattern) == "table" then
-			vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-				pattern = keymap_data.file_pattern,
-				callback = function()
-					-- Use wk.add here with correct argument types
-					for __, mode in ipairs(keymap_data.mode) do
-						local cmd = get_cmd(keymap_data, mode)
-						assert(cmd, "set_keymaps: `cmd` is required for conditional keymaps")
-
-						vim.keymap.set(mode, key, cmd, {
-							desc = _.key_or(keymap_data, 'desc', ""),
-							buffer = true,
-							noremap = _.key_or(keymap_data, 'noremap', true),
-							silent = _.key_or(keymap_data, 'silent', true),
-						})
-					end
-				end
-			})
-		else -- Otherwise, set the keymap globally
-			-- Use wk.add here with correct argument types
-			for __, mode in ipairs(keymap_data.mode) do
-				local cmd = get_cmd(keymap_data, mode)
-
-				-- Use the group key for starter descriptions in which-key
-				wk.add({
-					key,                       -- lhs (left-hand side)
-					cmd,                       -- rhs (right-hand side) or cmd function
-					group = keymap_data.group, -- Group for description
-					desc = keymap_data.desc,   -- Description
-					mode = mode,
-					noremap = _.key_or(keymap_data, 'noremap', true),
-					silent = _.key_or(keymap_data, 'silent', true),
-					buffer = _.key_or(keymap_data, 'buffer', false),
-				})
-			end
-		end
-	end
-end
-
--- Function to create command abbreviations
-local function create_command_abbreviations(abbreviations)
-	for _, abbr in ipairs(abbreviations) do
-		vim.cmd(string.format("cab %s %s", abbr[1], abbr[2]))
-	end
-end
 
 wk.add({
 	"K",
-	vim.lsp.buf.hover,
+	function()
+		vim.lsp.buf.hover({
+			height = 100,
+			border = true,
+		})
+	end,
 	desc = "LSP: Show hover documentation",
+	icon = " ",
+	mode = { "n" },
+})
+
+wk.add({
+	"<S-K>",
+	function()
+		local cur = vim.api.nvim_get_current_win()
+		local cfg = vim.api.nvim_win_get_config(cur)
+		-- If we're inside a float (e.g. focused hover), close it
+		if cfg.relative ~= "" then
+			vim.api.nvim_win_close(cur, true)
+			return
+		end
+		-- Otherwise show hover (don't close other floats: avoids blocking hover when another UI float exists)
+		vim.lsp.buf.hover({ height = 100, border = true })
+	end,
+	desc = "LSP: Show hover; close hover if focused in float",
 	icon = " ",
 	mode = { "n" },
 })
@@ -613,6 +370,7 @@ wk.add({
 		function() require('goto-preview').close_all_win() end,
 		desc = "Goto Preview: Close All Windows",
 		icon = "",
+		mode = { "n" },
 	},
 	{
 		group = " Goto Preview",
@@ -684,16 +442,11 @@ local cmd_abbreviations = {
 	{ "lazy", "Lazy" },
 	{ "ccc",  "CodeCompanion" },
 	{ "ccb",  "CodeCompanion #{buffer}" },
-	-- { "ccc",  "CodeCompanionChat" },
 	{ "cca",  "CodeCompanionActions" },
 }
 
 -- Create the command abbreviations
-create_command_abbreviations(cmd_abbreviations)
-
--- Set the keymaps from the table
-
-set_keymaps(KEYMAPS)
+mapping_helpers.create_command_abbreviations(cmd_abbreviations)
 
 
 wk.add({
@@ -703,12 +456,6 @@ wk.add({
 	desc = "Window Management: Terminal"
 })
 
-wk.add({
-	"<C-w>",
-	"<Esc><C-w>",
-	mode = { 'i' },
-	desc = "Window Management: Insert"
-})
 
 wk.add({
 	"<leader>r",
@@ -795,6 +542,13 @@ wk.add({
 		icon = " ",
 		mode = { "n", "x" },
 	},
+	{
+		"<leader>oa",
+		"<cmd>AerialToggle<cr>",
+		desc = "Open aerial side bar",
+		icon = " ",
+		mode = { "n", "x" },
+	},
 })
 
 wk.add({
@@ -813,12 +567,6 @@ wk.add({
 		Snacks.picker.icons,
 		desc = "Show available icons",
 		icon = " "
-	},
-	{
-		"<space>sc",
-		function() Snacks.picker.command_history() end,
-		desc = "Show command history",
-		icon = " ",
 	},
 	{
 		"<leader>sf",
@@ -974,18 +722,6 @@ wk.add({
 wk.add({
 	group = "  Buffers",
 	icon = " ",
-	-- NOTE: <A-j> and <A-k> commented out in favor of window navigation
-	-- Alternative buffer navigation: ,b (next), mb (previous), <leader>bn/bp
-	-- {
-	-- 	"<A-k>",
-	-- 	buffer_calls.next,
-	-- 	mode = "n",
-	-- },
-	-- {
-	-- 	"<A-j>",
-	-- 	buffer_calls.previous,
-	-- 	mode = "n",
-	-- },
 	{
 		"<A-q>",
 		buffer_calls.delete,
@@ -1025,18 +761,6 @@ wk.add({
 			buffer_calls.only,
 			desc = "Delete other buffers",
 			icon = " ", -- Icon for delete buffer
-		},
-		{
-			",b",
-			buffer_calls.next,
-			desc = "Go to next buffer",
-			icon = " ", -- Icon for next buffer
-		},
-		{
-			"mb",
-			buffer_calls.previous,
-			desc = "Go to previous buffer",
-			icon = " ", -- Icon for previous buffer
 		},
 	}
 })
@@ -1082,10 +806,10 @@ wk.add({
 		"<leader>tt",
 		function()
 			lib.press("<esc>")
-			if is_dashboard() then
+			if mapping_helpers.is_dashboard() then
 				lib.run_command("ene")
 			end
-			if not is_dashboard() then
+			if not mapping_helpers.is_dashboard() then
 				lib.run_command("tabe")
 			end
 			vim.schedule(function()
@@ -1198,24 +922,6 @@ wk.add({
 		desc = "Code Companion: Write action",
 		icon = "󱐏 ",
 		mode = { "n", "x" },
-	},
-	{
-		"<leader>cr",
-		function()
-			require("codecompanion.cursor_rules").add_cursor_rules_to_chat()
-		end,
-		desc = "Code Companion: Add cursor rules to chat",
-		icon = " ",
-		mode = { "n" },
-	},
-	{
-		"<leader>cl",
-		function()
-			require("codecompanion.cursor_rules").set_cursor_rules_variable()
-		end,
-		desc = "Code Companion: Load cursor rules",
-		icon = " ",
-		mode = { "n" },
 	},
 })
 
@@ -1626,126 +1332,26 @@ wk.add({
 })
 
 
+-- Mini.files keymap setup
+-- Uses helper functions from app.mapping_helpers for cleaner code
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "minifiles",
 	callback = function()
 		local minifiles = require('mini.files')
 
-		---@param map string
-		---@return wk.Spec
-		local function close(map)
-			return {
-				map,
-				function()
-					minifiles.close()
-				end,
-				mode = { "n" },
-				desc = "Close",
-				icon = "󰅖 ",
-				buffer = true,
-				noremap = true,
-				silent = true,
-			}
-		end
+		-- Use helper functions from mapping_helpers module
+		wk.add(mapping_helpers.minifiles.close("<leader>q"))
+		wk.add(mapping_helpers.minifiles.close("q"))
 
-		---@param map string
-		---@return wk.Spec
-		local function go_in(map, config)
-			return {
-				map,
-				function()
-					minifiles.go_in(config)
-				end,
-				mode = { "n" },
-				desc = "Go In",
-				icon = " ",
-				buffer = true,
-				noremap = true,
-				silent = true,
-			}
-		end
+		wk.add(mapping_helpers.minifiles.refresh("<leader>r"))
 
-		---@param map string
-		---@return wk.Spec
-		local function go_out(map, config)
-			return {
-				map,
-				function()
-					minifiles.go_out()
-				end,
-				mode = { "n" },
-				desc = "Go Out",
-				icon = " ",
-				buffer = true,
-				noremap = true,
-				silent = true,
-			}
-		end
+		wk.add(mapping_helpers.minifiles.go_in("L", { close_on_file = false }))
+		wk.add(mapping_helpers.minifiles.go_in("<Tab>", { close_on_file = false }))
+		wk.add(mapping_helpers.minifiles.go_in("<CR>", { close_on_file = true }))
 
-		-- ---@param map string
-		-- ---@return wk.Spec
-		-- local function open(map)
-		-- 	return {
-		-- 		map,
-		-- 		function()
-		-- 			minifiles.open()
-		-- 		end,
-		-- 		mode = { "n" },
-		-- 		desc = "Open",
-		-- 		icon = "󰏆 ",
-		-- 		buffer = true,
-		-- 		noremap = true,
-		-- 		silent = true,
-		-- 	}
-		-- end
-		--
-		-- ---@param map string
-		-- ---@return wk.Spec
-		-- local function toggle(map)
-		-- 	return {
-		-- 		map,
-		-- 		function()
-		-- 			minifiles.toggle()
-		-- 		end,
-		-- 		mode = { "n" },
-		-- 		desc = "Toggle",
-		-- 		icon = "󰄬 ",
-		-- 		buffer = true,
-		-- 		noremap = true,
-		-- 		silent = true,
-		-- 	}
-		-- end
-
-		---@param map string
-		---@return wk.Spec
-		local function refresh(map)
-			return {
-				map,
-				function()
-					minifiles.refresh()
-				end,
-				mode = { "n" },
-				desc = "Refresh",
-				icon = "󰑓 ",
-				buffer = true,
-				noremap = true,
-				silent = true,
-			}
-		end
-
-		wk.add(close("<leader>q"))
-		wk.add(close("q"))
-
-		wk.add(refresh("<leader>r"))
-
-		wk.add(go_in("L", { close_on_file = false }))
-		wk.add(go_in("<Tab>", { close_on_file = false }))
-		wk.add(go_in("<CR>", { close_on_file = true }))
-
-		wk.add(go_out("H"))
-		wk.add(go_out("<BS>"))
-		wk.add(go_out("<S-Tab>"))
-
+		wk.add(mapping_helpers.minifiles.go_out("H"))
+		wk.add(mapping_helpers.minifiles.go_out("<BS>"))
+		wk.add(mapping_helpers.minifiles.go_out("<S-Tab>"))
 
 		wk.add({
 			"<leader>w",
@@ -1760,134 +1366,110 @@ vim.api.nvim_create_autocmd("FileType", {
 		})
 	end,
 })
-wk.add({
-	group = " Neovide",
-	icon = " ",
-	{
-		"<D-s>",
-		":w<CR>",
-		desc = "Save",
-		icon = " ",
-		mode = { "n" },
-	},
-	{
-		"<D-c>",
-		'"+y',
-		desc = "Copy",
-		icon = " ",
-		mode = { "v" },
-	},
-	{
-		"<D-c>",
-		'"+y',
-		desc = "Copy",
-		icon = " ",
-		mode = { "v" },
-	},
-	{
-		"<D-v>",
-		'"+P',
-		desc = "Paste",
-		icon = " ",
-		mode = { "n", "v" },
-	},
-	{
-		"<D-v>",
-		'<C-R>+',
-		desc = "Paste command mode",
-		icon = " ",
-		mode = { "c" },
-	},
-	{
-		"<D-v>",
-		'<ESC>l"+Pli',
-		desc = "Paste insert mode",
-		icon = " ",
-		mode = { "i" },
-	},
-	{
-		"<D-v>",
-		"<C-\\><C-o><C-r>+<space>",
-		desc = "Paste",
-		icon = " ",
-		mode = { "t", },
-	},
-})
-
-wk.add({
-	group = " Neovide",
-	icon = " ",
-	{
-		"<D-s>",
-		":w<CR>",
-		desc = "Save",
-		icon = " ",
-		mode = { "n" },
-	},
-	{
-		"<D-c>",
-		'"+y',
-		desc = "Copy",
-		icon = " ",
-		mode = { "v" },
-	},
-	{
-		"<D-c>",
-		'"+y',
-		desc = "Copy",
-		icon = " ",
-		mode = { "v" },
-	},
-	{
-		"<D-v>",
-		'"+P',
-		desc = "Paste",
-		icon = " ",
-		mode = { "n", "v" },
-	},
-	{
-		"<D-v>",
-		'<C-R>+',
-		desc = "Paste command mode",
-		icon = " ",
-		mode = { "c" },
-	},
-	{
-		"<D-v>",
-		'<ESC>l"+Pli',
-		desc = "Paste insert mode",
-		icon = " ",
-		mode = { "i" },
-	},
-	{
-		"<D-v>",
-		"<C-\\><C-o><C-r>+<space>",
-		desc = "Paste",
-		icon = " ",
-		mode = { "t", },
-	},
-})
-
-
+-- Neovide-only: Cmd+C/V/S and other Cmd keybindings (IDE-like). Only registered when g:neovide is set.
+-- See https://neovide.dev/faq.html#how-can-i-use-cmd-ccmd-v-to-copy-and-paste
 if vim.g.neovide then
+	local function neovide_paste()
+		vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
+	end
 	wk.add({
-		"<C-=>",
-		function()
-			vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * 1.25
-		end,
-		desc = "Increase Neovide scale factor",
-		icon = " ",
-		mode = { "n" },
-	})
-
-	wk.add({
-		"<C-->",
-		function()
-			vim.g.neovide_scale_factor = vim.g.neovide_scale_factor / 1.25
-		end,
-		desc = "Decrease Neovide scale factor",
-		icon = " ",
-		mode = { "n" },
+		group = " Neovide",
+		icon = " ",
+		{
+			"<D-s>",
+			function() vim.cmd.write() end,
+			desc = "Save",
+			icon = " ",
+			mode = { "n", "i", "v" },
+		},
+		{
+			"<D-c>",
+			function() vim.cmd([[normal! "+y]]) end,
+			desc = "Copy",
+			icon = " ",
+			mode = { "v" },
+		},
+		{
+			"<D-v>",
+			function() vim.cmd([[normal! "+p]]) end,
+			desc = "Paste",
+			icon = " ",
+			mode = { "n" },
+		},
+		{
+			"<D-v>",
+			'"+p',
+			desc = "Paste",
+			icon = " ",
+			mode = { "v" },
+		},
+		{
+			"<D-v>",
+			neovide_paste,
+			desc = "Paste (insert/cmdline/term)",
+			icon = " ",
+			mode = { "i", "c", "t" },
+		},
+		{
+			"<D-a>",
+			function()
+				local t = function(s) return vim.api.nvim_replace_termcodes(s, true, true, true) end
+				if vim.fn.mode() == "i" then
+					vim.api.nvim_feedkeys(t("<C-o>ggVG"), "n", false)
+				else
+					vim.cmd([[normal! ggVG]])
+				end
+			end,
+			desc = "Select all",
+			icon = " ",
+			mode = { "n", "i" },
+		},
+		{
+			"<D-z>",
+			function()
+				local t = function(s) return vim.api.nvim_replace_termcodes(s, true, true, true) end
+				if vim.fn.mode() == "i" then
+					vim.api.nvim_feedkeys(t("<C-o>u"), "n", false)
+				else
+					vim.cmd([[normal! u]])
+				end
+			end,
+			desc = "Undo",
+			icon = " ",
+			mode = { "n", "i", "v" },
+		},
+		{
+			"<D-S-z>",
+			function()
+				local t = function(s) return vim.api.nvim_replace_termcodes(s, true, true, true) end
+				if vim.fn.mode() == "i" then
+					vim.api.nvim_feedkeys(t("<C-o><C-r>"), "n", false)
+				else
+					vim.api.nvim_feedkeys(t("<C-r>"), "n", false)
+				end
+			end,
+			desc = "Redo",
+			icon = " ",
+			mode = { "n", "i", "v" },
+		},
+		{
+			"<C-=>",
+			function()
+				vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) * 1.25
+			end,
+			desc = "Increase Neovide scale factor",
+			icon = " ",
+			mode = { "n" },
+		},
+		{
+			"<C-->",
+			function()
+				vim.g.neovide_scale_factor = (vim.g.neovide_scale_factor or 1.0) / 1.25
+			end,
+			desc = "Decrease Neovide scale factor",
+			icon = " ",
+			mode = { "n" },
+		},
 	})
 end
 
