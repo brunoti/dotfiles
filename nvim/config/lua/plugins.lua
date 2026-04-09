@@ -22,19 +22,89 @@ local function setup()
 			"OXY2DEV/markview.nvim",
 			lazy = false,
 			priority = 1,
-			opts = {
-				preview = {
-					filetypes = { "markdown", "codecompanion", "Avante" },
-					ignore_buftypes = {},
-				},
-			},
 			init = function()
+				require('markview').setup({
+					markdown = {
+						headings = require('markview.presets').headings.slanted,
+						horizontal_rules = require('markview.presets').horizontal_rules.thick,
+						tables = {
+							parts = require('markview.presets').tables.single.parts,
+							block_decorator = true,
+							use_virt_lines = true,
+						},
+						list_items = {
+							enable = true,
+							wrap = true,
+
+							indent_size = function(buffer)
+								if type(buffer) ~= "number" then
+									return vim.bo.shiftwidth or 2;
+								end
+
+								--- Use 'shiftwidth' value.
+								return vim.bo[buffer].shiftwidth or 2;
+							end,
+							shift_width = 2,
+
+							marker_minus = {
+								add_padding = false,
+								conceal_on_checkboxes = true,
+
+								text = "● ",
+								hl = "MarkviewListItemMinus"
+							},
+
+							marker_plus = {
+								add_padding = false,
+								conceal_on_checkboxes = true,
+
+								text = "◈ ",
+								hl = "MarkviewListItemPlus"
+							},
+
+							marker_star = {
+								add_padding = false,
+								conceal_on_checkboxes = true,
+
+								text = "◇ ",
+								hl = "MarkviewListItemStar"
+							},
+
+							marker_dot = {
+								text = function(_, item)
+									return string.format("%d.", item.n);
+								end,
+								hl = "@markup.list.markdown",
+								add_padding = true,
+								conceal_on_checkboxes = true
+							},
+
+							marker_parenthesis = {
+								text = function(_, item)
+									return string.format("%d)", item.n);
+								end,
+								hl = "@markup.list.markdown",
+								add_padding = true,
+								conceal_on_checkboxes = true
+							}
+						},
+					},
+					preview = {
+						icon_provider = "devicons",
+						filetypes = { "markdown", "codecompanion" },
+						ignore_buftypes = {},
+					},
+					pipe_table = {
+						preset = 'heavy',
+					},
+				})
 			end
 		},
 		-- neovim tree sitter
 		{
 			"nvim-treesitter/nvim-treesitter",
 			priority = 2,
+			enabled = true,
 			dependencies = {
 				'nvim-treesitter/nvim-treesitter-textobjects'
 			},
@@ -51,16 +121,15 @@ local function setup()
 					},
 					indent = {
 						enable = true,
-						additional_vim_regex_highlighting = true,
 					},
-					highlight = { enable = true },
+					highlight = {
+						enable = true,
+						additional_vim_regex_highlighting = false,
+					},
 					textobjects = {
 						enabled = true
 					}
 				})
-
-				vim.wo.foldmethod = 'expr'
-				vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 			end
 		},
 		{
@@ -115,6 +184,7 @@ local function setup()
 
 		{
 			'windwp/nvim-ts-autotag',
+			enabled = false,
 			ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
 			opts = {}
 		},
@@ -195,10 +265,6 @@ local function setup()
 							-- "trouble",
 							-- "kitty-scrollback",
 							-- "OverseerList",
-							-- "Avante",
-							-- "AvanteInput",
-							-- "AvanteSelectedFiles",
-							-- "AvantePromptInput",
 							-- "codecompanion",
 							-- "text.kulala_ui",
 						},
@@ -207,7 +273,7 @@ local function setup()
 						lualine_x = {
 							{
 								"overseer",
-								label = "",     -- Prefix for task counts
+								label = "", -- Prefix for task counts
 								colored = true, -- Color the task icons and counts
 								symbols = {
 									[overseer.STATUS.FAILURE] = " :",
@@ -215,10 +281,10 @@ local function setup()
 									[overseer.STATUS.SUCCESS] = " :",
 									[overseer.STATUS.RUNNING] = " :",
 								},
-								unique = false,     -- Unique-ify non-running task count by name
-								name = nil,         -- List of task names to search for
-								name_not = false,   -- When true, invert the name search
-								status = nil,       -- List of task statuses to display
+								unique = false, -- Unique-ify non-running task count by name
+								name = nil, -- List of task names to search for
+								name_not = false, -- When true, invert the name search
+								status = nil, -- List of task statuses to display
 								status_not = false, -- When true, invert the status search
 							},
 							lualine_codecompanion_spinner(),
@@ -473,7 +539,6 @@ local function setup()
 					}
 				},
 				"mikavilpas/blink-ripgrep.nvim",
-				'Kaiser-Yang/blink-cmp-avante',
 			},
 			cmdline = {
 				enabled = false
@@ -588,9 +653,6 @@ local function setup()
 											['Llama.cpp'] = '󰳆',
 											Deepseek = '',
 											Codeium = "",
-											AvanteCmd = '',
-											AvanteMention = '',
-											Avante = '',
 										}
 
 										local symbol = extra_icons[ctx.kind] or require('lspkind').symbolic(ctx.kind, {
@@ -707,7 +769,6 @@ local function setup()
 		{
 			"zbirenbaum/copilot.lua",
 			opts = {
-				copilot_node_command = vim.fn.expand("$HOME") .. "/.asdf/installs/nodejs/22.14.0/bin/node",
 				disable_limit_reached_message = true,
 				panel = {
 					enabled = false,
@@ -920,7 +981,7 @@ local function setup()
 				---@type snacks.Config
 				local config = {
 					indent = {
-						enabled = true,
+						enabled = false,
 						char = "│",
 						only_scope = true,
 						only_current = true,
@@ -930,7 +991,7 @@ local function setup()
 						enabled = true,
 						priority = 200,
 						char = "│",
-						underline = false,   -- underline the start of the scope
+						underline = false, -- underline the start of the scope
 						only_current = true, -- only show scope in the current window
 					},
 					input = { enabled = true },
@@ -991,7 +1052,7 @@ local function setup()
 							recent = { title = 'Most Recently Used Files' },
 						},
 					},
-					animation = { enabled = true },
+					animation = { enabled = false },
 					bigfile = { enabled = true },
 					explorer = { enabled = true },
 					notifier = {
@@ -1002,11 +1063,11 @@ local function setup()
 					quickfile = { enabled = true },
 					statuscolumn = {
 						enabled = true,
-						left = { "sign" },         -- priority of signs on the left (high to low)
+						left = { "sign" },   -- priority of signs on the left (high to low)
 						right = { "fold", "git" }, -- priority of signs on the right (high to low)
 						folds = {
-							open = true,             -- show open fold icons
-							git_hl = false,          -- use Git Signs hl for fold icons
+							open = true,       -- show open fold icons
+							git_hl = false,    -- use Git Signs hl for fold icons
 						},
 						git = {
 							-- patterns to match Git signs
@@ -1037,12 +1098,12 @@ local function setup()
 						},
 					},
 					words = {
-						enabled = true,            -- enable/disable the plugin
-						debounce = 200,            -- time in ms to wait before updating
-						notify_jump = false,       -- show a notification when jumping
-						notify_end = true,         -- show a notification when reaching the end
-						foldopen = true,           -- open folds after jumping
-						jumplist = true,           -- set jump point before jumping
+						enabled = true,      -- enable/disable the plugin
+						debounce = 200,      -- time in ms to wait before updating
+						notify_jump = false, -- show a notification when jumping
+						notify_end = true,   -- show a notification when reaching the end
+						foldopen = true,     -- open folds after jumping
+						jumplist = true,     -- set jump point before jumping
 						modes = { "n", "i", "c" }, -- modes to show references
 					},
 					zen = {
@@ -1175,7 +1236,7 @@ local function setup()
 			"folke/noice.nvim",
 			event = "VeryLazy",
 			opts = {
-				-- add any options here
+				animations = { enabled = false },
 			},
 			-- dependencies = {
 			--   "rcarriga/nvim-notify",
@@ -1210,12 +1271,6 @@ local function setup()
 				local my_ws_grp = vim.api.nvim_create_augroup("my_ws_grp", { clear = true })
 				vim.api.nvim_create_autocmd({ "BufEnter", "VimEnter" }, {
 					callback = function()
-						-- if starts_with(vim.bo.filetype, "Avante") then
-						-- 	vim.api.nvim_set_current_dir(get_root())
-						-- 	return
-						-- end
-
-
 						-- do nothing if not file type
 						local buf_type = vim.api.nvim_get_option_value("buftype", { buf = 0 })
 						if (buf_type ~= "" and buf_type ~= "acwrite") then
@@ -1327,16 +1382,16 @@ local function setup()
 			version = '*',
 			opts = {
 				mappings = {
-					add = 'sa',            -- Add surrounding in Normal and Visual modes
-					delete = 'sd',         -- Delete surrounding
-					find = 'sf',           -- Find surrounding (to the right)
-					find_left = 'sF',      -- Find surrounding (to the left)
-					highlight = 'sh',      -- Highlight surrounding
-					replace = 'sr',        -- Replace surrounding
+					add = 'sa',       -- Add surrounding in Normal and Visual modes
+					delete = 'sd',    -- Delete surrounding
+					find = 'sf',      -- Find surrounding (to the right)
+					find_left = 'sF', -- Find surrounding (to the left)
+					highlight = 'sh', -- Highlight surrounding
+					replace = 'sr',   -- Replace surrounding
 					update_n_lines = 'sn', -- Update `n_lines`
 
-					suffix_last = 'l',     -- Suffix to search with "prev" method
-					suffix_next = 'n',     -- Suffix to search with "next" method
+					suffix_last = 'l', -- Suffix to search with "prev" method
+					suffix_next = 'n', -- Suffix to search with "next" method
 				},
 
 				search_method = "cover_or_next",
@@ -1632,7 +1687,7 @@ local function setup()
 			ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
 			config = {
 				keymaps = {
-					toggle = '<leader>dd',          -- default '<leader>dd'
+					toggle = '<leader>dd',     -- default '<leader>dd'
 					go_to_definition = '<leader>dx' -- default '<leader>dx'
 				}
 			}
@@ -1742,22 +1797,37 @@ local function setup()
 						}
 					}
 				},
-				extensions = {
-					mcphub = {
-						callback = "mcphub.extensions.codecompanion",
-						opts = {
-							-- MCP Tools
-							make_tools = true,                    -- Make individual tools (@server__tool) and server groups (@server) from MCP servers
-							show_server_tools_in_chat = true,     -- Show individual tools in chat completion (when make_tools=true)
-							add_mcp_prefix_to_tool_names = false, -- Add mcp__ prefix (e.g `@mcp__github`, `@mcp__neovim__list_issues`)
-							show_result_in_chat = true,           -- Show tool results directly in chat buffer
-							format_tool = nil,                    -- function(tool_name:string, tool: CodeCompanion.Agent.Tool) : string Function to format tool names to show in the chat buffer
-							-- MCP Resources
-							make_vars = true,                     -- Convert MCP resources to #variables for prompts
-							-- MCP Prompts
-							make_slash_commands = true,           -- Add MCP prompts as /slash commands
-						}
+				rules = {
+					default = {
+						description = "Collection of common files for all projects",
+						files = {
+							{ path = "AGENTS.md", parser = "claude" },
+							{ path = "CLAUDE.md", parser = "claude" },
+						},
+						is_preset = true,
 					},
+					opts = {
+						chat = { autoload = "default" },
+						inline = { autoload = "default" },
+					}
+					,
+				},
+				extensions = {
+					-- mcphub = {
+					-- 	callback = "mcphub.extensions.codecompanion",
+					-- 	opts = {
+					-- 		-- MCP Tools
+					-- 		make_tools = true,             -- Make individual tools (@server__tool) and server groups (@server) from MCP servers
+					-- 		show_server_tools_in_chat = true, -- Show individual tools in chat completion (when make_tools=true)
+					-- 		add_mcp_prefix_to_tool_names = false, -- Add mcp__ prefix (e.g `@mcp__github`, `@mcp__neovim__list_issues`)
+					-- 		show_result_in_chat = true,    -- Show tool results directly in chat buffer
+					-- 		format_tool = nil,             -- function(tool_name:string, tool: CodeCompanion.Agent.Tool) : string Function to format tool names to show in the chat buffer
+					-- 		-- MCP Resources
+					-- 		make_vars = true,              -- Convert MCP resources to #variables for prompts
+					-- 		-- MCP Prompts
+					-- 		make_slash_commands = true,    -- Add MCP prompts as /slash commands
+					-- 	}
+					-- },
 					history = {
 						enabled = true,
 						opts = {
@@ -1781,21 +1851,21 @@ local function setup()
 							},
 							---Automatically generate titles for new chats
 							auto_generate_title = true,
-              title_generation_opts = {
-                ---Adapter for generating titles (defaults to current chat adapter)
-                adapter = "copilot",
-                ---Model for generating titles (defaults to current chat model)
-                model = "gpt-4.1",
-                ---Number of user prompts after which to refresh the title (0 to disable)
-                refresh_every_n_prompts = 0, -- e.g., 3 to refresh after every 3rd user prompt
-                ---Maximum number of times to refresh the title (default: 3)
-                max_refreshes = 3,
-                format_title = function(original_title)
-                  -- this can be a custom function that applies some custom
-                  -- formatting to the title.
-                  return original_title
-                end
-              },
+							title_generation_opts = {
+								---Adapter for generating titles (defaults to current chat adapter)
+								adapter = "copilot",
+								---Model for generating titles (defaults to current chat model)
+								model = "gpt-4.1",
+								---Number of user prompts after which to refresh the title (0 to disable)
+								refresh_every_n_prompts = 3, -- e.g., 3 to refresh after every 3rd user prompt
+								---Maximum number of times to refresh the title (default: 3)
+								max_refreshes = 3,
+								format_title = function(original_title)
+									-- this can be a custom function that applies some custom
+									-- formatting to the title.
+									return original_title
+								end
+							},
 							---On exiting and entering neovim, loads the last chat on opening chat
 							continue_last_chat = false,
 							---When chat is cleared with `gx` delete the chat from history
@@ -1813,13 +1883,13 @@ local function setup()
 								browse_summaries_keymap = "gbs",
 
 								generation_opts = {
-									adapter = nil,               -- defaults to current chat adapter
-									model = nil,                 -- defaults to current chat model
-									context_size = 90000,        -- max tokens that the model supports
-									include_references = true,   -- include slash command content
+									adapter = nil,      -- defaults to current chat adapter
+									model = nil,        -- defaults to current chat model
+									context_size = 90000, -- max tokens that the model supports
+									include_references = true, -- include slash command content
 									include_tool_outputs = true, -- include tool execution results
-									system_prompt = nil,         -- custom system prompt (string or function)
-									format_summary = nil,        -- custom function to format generated summary e.g to remove <think/> tags from summary
+									system_prompt = nil, -- custom system prompt (string or function)
+									format_summary = nil, -- custom function to format generated summary e.g to remove <think/> tags from summary
 								},
 							},
 
@@ -1843,12 +1913,12 @@ local function setup()
 						},
 					},
 				},
-        strategies = {
-          chat = { adapter = "opencode" },
-          inline = { adapter = "copilot_gpt_mini" },
-          cmd = { adapter = "copilot_gpt_mini" },
-          background = { adapter = "copilot_gpt_mini" },
-        },
+				strategies = {
+					chat = { adapter = "omniroute" },
+					inline = { adapter = "omniroute" },
+					cmd = { adapter = "omniroute" },
+					background = { adapter = "copilot_gpt_mini" },
+				},
 				display = {
 					chat = {
 						window = {
@@ -1983,7 +2053,8 @@ local function setup()
 								content = function(context)
 									local text = require("codecompanion.helpers.actions").get_code(context.start_line, context.end_line)
 
-									return "Address the grammatical errors of the text inside <Input /> and apply needed corrections following <Instructions />.\n" ..
+									return
+											"Address the grammatical errors of the text inside <Input /> and apply needed corrections following <Instructions />.\n" ..
 											"\n<Instructions>\n" ..
 											"  - you MUST preserve the original tone.\n" ..
 											"  - you MUST preserve information.\n" ..
@@ -2053,6 +2124,9 @@ local function setup()
 					acp = {
 						opencode = function()
 							return require("codecompanion.adapters").extend("opencode", {
+								commands = {
+									default = { "opencode", "acp" },
+								},
 								defaults = {
 									timeout = 30000,
 								},
@@ -2138,6 +2212,20 @@ local function setup()
 								},
 							})
 						end,
+						omniroute = function()
+							return require("codecompanion.adapters").extend("openai_compatible", {
+								env = {
+									url = "http://localhost:20128",
+									api_key = "OMNIROUTE_API_KEY",
+									chat_url = "/v1/chat/completions",
+								},
+								schema = {
+									model = {
+										default = "free-thinking-v2",
+									},
+								},
+							})
+						end,
 						openrouter_qwen = function()
 							return require("codecompanion.adapters").extend("openai_compatible", {
 								env = {
@@ -2219,8 +2307,8 @@ local function setup()
 			opts = {
 				color_devicons   = true,
 				open_cmd         = 'vnew', -- can also be a lua function
-				live_update      = false,  -- auto execute search again when you write to any file in vim
-				lnum_for_results = true,   -- show line number for search/replace results
+				live_update      = false, -- auto execute search again when you write to any file in vim
+				lnum_for_results = true, -- show line number for search/replace results
 				line_sep_start   = '┌────────────────────────────────────────',
 				result_padding   = '│  ',
 				line_sep         = '└────────────────────────────────────────',
@@ -2423,132 +2511,6 @@ local function setup()
 			end
 		},
 		{
-			'pteroctopus/faster.nvim',
-			opts = {
-				-- Behaviour table contains configuration for behaviours faster.nvim uses
-				behaviours = {
-					-- Bigfile configuration controls disabling and enabling of features when
-					-- big file is opened
-					bigfile = {
-						-- Behaviour can be turned on or off. To turn on set to true, otherwise
-						-- set to false
-						on = true,
-						-- Table which contains names of features that will be disabled when
-						-- bigfile is opened. Feature names can be seen in features table below.
-						-- features_disabled can also be set to "all" and then all features that
-						-- are on (on=true) are going to be disabled for this behaviour
-						features_disabled = {
-							"illuminate", "matchparen", "lsp", "treesitter",
-							"indent_blankline", "vimopts", "syntax", "filetype"
-						},
-						-- Files larger than `filesize` are considered big files. Value is in MB.
-						filesize = 2,
-						-- Autocmd pattern that controls on which files behaviour will be applied.
-						-- `*` means any file.
-						pattern = "*",
-						-- Optional extra patterns and sizes for which bigfile behaviour will apply.
-						-- Note! that when multiple patterns (including the main one) and filesizes
-						-- are defined: bigfile behaviour will be applied for minimum filesize of
-						-- those defined in all applicable patterns for that file.
-						-- extra_pattern example in multi line comment is bellow:
-						--[[
-      extra_patterns = {
-        -- If this is used than bigfile behaviour for *.md files will be
-        -- triggered for filesize of 1.1MiB
-        { filesize = 1.1, pattern = "*.md" },
-        -- If this is used than bigfile behaviour for *.log file will be
-        -- triggered for the value in `behaviours.bigfile.filesize`
-        { pattern  = "*.log" },
-        -- Next line is invalid without the pattern and will be ignored
-        { filesize = 3 },
-      },
-      ]]
-						-- By default `extra_patterns` is an empty table: {}.
-						extra_patterns = {
-							{ pattern = "kitty-scrollback" }
-						},
-					},
-					-- Fast macro configuration controls disabling and enabling features when
-					-- macro is executed
-					fastmacro = {
-						-- Behaviour can be turned on or off. To turn on set to true, otherwise
-						-- set to false
-						on = true,
-						-- Table which contains names of features that will be disabled when
-						-- macro is executed. Feature names can be seen in features table below.
-						-- features_disabled can also be set to "all" and then all features that
-						-- are on (on=true) are going to be disabled for this behaviour.
-						-- Specificaly: lualine plugin is disabled when macros are executed because
-						-- if a recursive macro opens a buffer on every iteration this error will
-						-- happen after 300-400 hundred iterations:
-						-- `E5108: Error executing lua Vim:E903: Process failed to start: too many open files: "/usr/bin/git"`
-						features_disabled = { "lualine" },
-					}
-				},
-				-- Feature table contains configuration for features faster.nvim will disable
-				-- and enable according to rules defined in behaviours.
-				-- Defined feature will be used by faster.nvim only if it is on (`on=true`).
-				-- Defer will be used if some features need to be disabled after others.
-				-- defer=false features will be disabled first and defer=true features last.
-				features = {
-					-- Neovim filetype plugin
-					-- https://neovim.io/doc/user/filetype.html
-					filetype = {
-						on = true,
-						defer = true,
-					},
-					-- Illuminate plugin
-					-- https://github.com/RRethy/vim-illuminate
-					illuminate = {
-						on = true,
-						defer = false,
-					},
-					-- Indent Blankline
-					-- https://github.com/lukas-reineke/indent-blankline.nvim
-					indent_blankline = {
-						on = true,
-						defer = false,
-					},
-					-- Neovim LSP
-					-- https://neovim.io/doc/user/lsp.html
-					lsp = {
-						on = true,
-						defer = false,
-					},
-					-- Lualine
-					-- https://github.com/nvim-lualine/lualine.nvim
-					lualine = {
-						on = true,
-						defer = false,
-					},
-					-- Neovim Pi_paren plugin
-					-- https://neovim.io/doc/user/pi_paren.html
-					matchparen = {
-						on = true,
-						defer = false,
-					},
-					-- Neovim syntax
-					-- https://neovim.io/doc/user/syntax.html
-					syntax = {
-						on = true,
-						defer = true,
-					},
-					-- Neovim treesitter
-					-- https://neovim.io/doc/user/treesitter.html
-					treesitter = {
-						on = true,
-						defer = false,
-					},
-					-- Neovim options that affect speed when big file is opened:
-					-- swapfile, foldmethod, undolevels, undoreload, list
-					vimopts = {
-						on = true,
-						defer = false,
-					}
-				}
-			}
-		},
-		{
 			"CopilotC-Nvim/CopilotChat.nvim",
 			build = "make tiktoken", -- Only on MacOS or Linux
 			---@module 'CopilotChat'
@@ -2558,8 +2520,8 @@ local function setup()
 				separator = ' ',
 				window = {
 					layout = 'vertical', -- 'vertical', 'horizontal', 'float', 'replace', or a function that returns the layout
-					width = 0.3,         -- fractional width of parent, or absolute width in columns when > 1
-					height = 0.3,        -- fractional height of parent, or absolute height in rows when > 1
+					width = 0.3,    -- fractional width of parent, or absolute width in columns when > 1
+					height = 0.3,   -- fractional height of parent, or absolute height in rows when > 1
 				},
 				headers = {
 					user = '  User', -- Header to use for user questions
@@ -2617,11 +2579,11 @@ local function setup()
 					keywords = { italic = true },
 					functions = { italic = true },
 					variables = { italic = false },
-					sidebars = "dark",  -- style for sidebars, see below
-					floats = "dark",    -- style for floating windows
+					sidebars = "dark", -- style for sidebars, see below
+					floats = "dark", -- style for floating windows
 				},
 				day_brightness = 0.3, -- Adjusts the brightness of the colors of the **Day** style. Number between 0 and 1, from dull to vibrant colors
-				dim_inactive = true,  -- dims inactive windows
+				dim_inactive = true, -- dims inactive windows
 				lualine_bold = true,
 				on_highlights = function(highlights, colors)
 					local tokyo_colors        = require('tokyonight.colors').setup()
@@ -2678,9 +2640,6 @@ local function setup()
 
 
 					highlights.BlinkCmpKindText            = { fg = tokyo_colors.red }
-					highlights.BlinkCmpKindAvante          = { fg = tokyo_colors.blue }
-					highlights.BlinkCmpKindAvanteCmd       = { fg = tokyo_colors.blue }
-					highlights.BlinkCmpKindAvanteMention   = { fg = tokyo_colors.blue }
 					highlights.BlinkCmpSource              = { fg = tokyo_colors.fg_gutter }
 
 					highlights.MiniHipatternsBiomeIgnore   = { bg = '#DDDDFF', fg = tokyo_colors.blue, bold = true, italic = false }
@@ -2717,27 +2676,27 @@ local function setup()
 			priority = 1000,
 			opts = {
 				flavour = "auto", -- latte, frappe, macchiato, mocha
-				background = {    -- :h background
+				background = { -- :h background
 					light = "latte",
 					dark = "mocha",
 				},
 				transparent_background = false, -- disables setting the background color.
 				float = {
-					transparent = false,          -- enable transparent floating windows
-					solid = false,                -- use solid styling for floating windows, see |winborder|
+					transparent = false,      -- enable transparent floating windows
+					solid = false,            -- use solid styling for floating windows, see |winborder|
 				},
-				show_end_of_buffer = false,     -- shows the '~' characters after the end of buffers
-				term_colors = false,            -- sets terminal colors (e.g. `g:terminal_color_0`)
+				show_end_of_buffer = false, -- shows the '~' characters after the end of buffers
+				term_colors = false,        -- sets terminal colors (e.g. `g:terminal_color_0`)
 				dim_inactive = {
-					enabled = false,              -- dims the background color of inactive window
+					enabled = false,          -- dims the background color of inactive window
 					shade = "dark",
-					percentage = 0.15,            -- percentage of the shade to apply to the inactive window
+					percentage = 0.15,        -- percentage of the shade to apply to the inactive window
 				},
-				no_italic = false,              -- Force no italic
-				no_bold = false,                -- Force no bold
-				no_underline = false,           -- Force no underline
-				styles = {                      -- Handles the styles of general hi groups (see `:h highlight-args`):
-					comments = { "italic" },      -- Change the style of comments
+				no_italic = false,          -- Force no italic
+				no_bold = false,            -- Force no bold
+				no_underline = false,       -- Force no underline
+				styles = {                  -- Handles the styles of general hi groups (see `:h highlight-args`):
+					comments = { "italic" },  -- Change the style of comments
 					conditionals = { "italic" },
 					loops = {},
 					functions = { "italic" },
@@ -2791,6 +2750,7 @@ local function setup()
 		},
 		{
 			'nvim-mini/mini.hipatterns',
+			enabled = false,
 			version = '*',
 			config = function()
 				local hipatterns = require('mini.hipatterns')
@@ -2807,95 +2767,6 @@ local function setup()
 					},
 				})
 			end
-		},
-		{
-			"yetone/avante.nvim",
-			enabled = true,
-			event = "VeryLazy",
-			version = false, -- Never set this value to "*"! Never!
-			build = "make",
-			dependencies = {
-				{
-					-- support for image pasting
-					"HakonHarnes/img-clip.nvim",
-					event = "VeryLazy",
-					opts = {
-						default = {
-							embed_image_as_base64 = false,
-							prompt_for_file_name = false,
-							drag_and_drop = {
-								insert_mode = true,
-							},
-							use_absolute_path = false,
-						},
-					},
-				},
-			},
-			---@module "avante"
-			---@type avante.Config
-			opts = {
-				provider = "copilot",
-				rules = {
-					project_dir = '.cursor/rules',
-					global_dir = '~/.avante/rules',
-				},
-				system_prompt = function()
-					local hub = require("mcphub").get_hub_instance()
-					return hub and hub:get_active_servers_prompt() or ""
-				end,
-				-- Using function prevents requiring mcphub before it's loaded
-				custom_tools = function()
-					return {
-						require("mcphub.extensions.avante").mcp_tool(),
-					}
-				end,
-				web_search_engine = {
-					provider = "tavily",
-				},
-				hints = {
-					enabled = false
-				},
-				mappings = {
-					ask = "<leader>ak",
-					edit = "<leader>ae",
-					refresh = "<leader>ao",
-					focus = "<leader>af",
-					stop = "<leader>aS",
-					toggle = {
-						default = "<leader>at",
-						debug = "<leader>ad",
-						hint = "<leader>ah",
-						suggestion = "<leader>as",
-						repomap = "<leader>aR",
-					},
-				},
-				behaviour = {
-					use_cwd_as_root = true,
-				},
-				disabled_tools = {
-					"list_files", -- Built-in file operations
-					"search_files",
-					"read_file",
-					"create_file",
-					"rename_file",
-					"delete_file",
-					"create_dir",
-					"rename_dir",
-					"delete_dir",
-					"bash", -- Built-in terminal access
-				},
-			},
-			init = function()
-				-- local avante_group = vim.api.nvim_create_augroup("Avante", { clear = true })
-				-- vim.api.nvim_create_autocmd({ "BufEnter", "VimEnter" }, {
-				-- 	group = avante_group,
-				-- 	callback = function()
-				-- 		if starts_with(vim.bo.filetype, "Avante") then
-				-- 			vim.api.nvim_set_current_dir(get_root())
-				-- 		end
-				-- 	end,
-				-- })
-			end,
 		},
 		{ 'akinsho/git-conflict.nvim', version = "*", setup = {} },
 		{
@@ -3239,8 +3110,8 @@ local function setup()
 						border = "none",
 						width = 1, -- when <=1 it's a percentage of the editor width
 						height = 1,
-						row = -1,  -- when negative it's an offset from the bottom
-						col = 0,   -- when negative it's an offset from the right
+						row = -1, -- when negative it's an offset from the bottom
+						col = 0, -- when negative it's an offset from the right
 						zindex = 1000,
 					},
 				},
@@ -3266,6 +3137,7 @@ local function setup()
 		},
 		{
 			"ravitemer/mcphub.nvim",
+			enabled = false,
 			dependencies = {
 				"nvim-lua/plenary.nvim",
 			},
@@ -3276,11 +3148,7 @@ local function setup()
 					port = 6767,
 					json_decode = require("json5").parse,
 					mcp_request_timeout = 600000,
-					extansions = {
-						avante = {
-							make_slash_commands = true,
-						}
-					}
+					extansions = {}
 				})
 			end
 		},
@@ -3356,6 +3224,44 @@ local function setup()
 			pin = true,
 			priority = 6000,
 			build = './install.sh',
+		},
+		{
+			"Davidyz/VectorCode",
+			version = "*", -- optional, depending on whether you're on nightly or release
+			dependencies = { "nvim-lua/plenary.nvim" },
+		},
+		{
+			"romek-codes/bruno.nvim",
+			extensions = { "bru" },
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				-- Pickers
+				-- Choose one based on whichever picker you prefer.
+				"nvim-telescope/telescope.nvim",
+				-- Or
+				-- "ibhagwan/fzf-lua",
+				-- Or
+				-- {
+				--     "folke/snacks.nvim",
+				--     opts = { picker = { enabled = true } },
+				-- },
+			},
+			config = function()
+				require("bruno").setup(
+					{
+						-- Paths to your bruno collections.
+						collection_paths = {
+							{ name = "Main", path = "/path/to/folder/containing/collections/Documents/Bruno" },
+						},
+						-- Which picker to use, "fzf-lua" or "snacks" are also allowed.
+						picker = "telescope",
+						-- If output should be formatted by default.
+						show_formatted_output = true,
+						-- If formatting fails for whatever reason, don't show error message (will always fallback to unformatted output).
+						suppress_formatting_errors = false
+					}
+				)
+			end
 		}
 	})
 end
@@ -3728,6 +3634,13 @@ vim.filetype.add {
 		mdc = "markdown",
 	},
 }
+
+vim.api.nvim_create_autocmd('FileType', {
+	pattern = 'markdown',
+	callback = function()
+		vim.opt_local.wrap = false
+	end,
+})
 
 return {
 	setup = setup,

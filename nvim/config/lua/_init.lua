@@ -18,8 +18,8 @@ vim.opt.updatecount = 0
 
 vim.o.exrc = true
 
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldmethod = "manual"
+-- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldlevel = 99
 vim.opt.foldlevelstart = 1
 vim.opt.foldnestmax = 4
@@ -147,6 +147,15 @@ vim.opt.foldlevel = 1
 -- turn syntax on and filetype indentation
 vim.cmd [[syntax on]]
 vim.cmd [[filetype plugin indent on]]
+
+-- Use treesitter highlighting for TS/TSX instead of slow regex syntax
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+	callback = function()
+		vim.cmd("syntax off")
+		vim.treesitter.start()
+	end,
+})
 
 -- set filetype to typescript always
 vim.cmd [[
