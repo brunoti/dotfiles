@@ -100,37 +100,42 @@ local function setup()
 				})
 			end
 		},
-		-- neovim tree sitter
+		-- neovim tree sitter (v0.12+ requires 'main' branch)
 		{
 			"nvim-treesitter/nvim-treesitter",
+			branch = "main",
 			priority = 2,
 			enabled = true,
 			dependencies = {
-				'nvim-treesitter/nvim-treesitter-textobjects'
+				'nvim-treesitter/nvim-treesitter-textobjects',
+				branch = "main",
 			},
 			build = ":TSUpdate",
-			config = function()
-				local configs = require("nvim-treesitter.configs")
-
-				---@diagnostic disable-next-line: missing-fields
-				configs.setup({
-					sync_install = true,
-					auto_install = true,
-					context_commentstring = {
-						enable = true
-					},
-					indent = {
-						enable = true,
-					},
-					highlight = {
-						enable = true,
-						additional_vim_regex_highlighting = false,
-					},
-					textobjects = {
-						enabled = true
-					}
+			main = "nvim-treesitter",
+			opts = {},
+			init = function()
+				local ensure_installed = {
+					"lua", "vim", "vimdoc", "query",
+					"typescript", "tsx", "javascript", "jsdoc",
+					"json", "html", "css", "scss",
+					"markdown", "markdown_inline",
+					"python", "bash", "yaml", "toml", "regex",
+				}
+				local already_installed = require("nvim-treesitter.config").get_installed()
+				local to_install = vim.iter(ensure_installed)
+					:filter(function(p) return not vim.tbl_contains(already_installed, p) end)
+					:totable()
+				if #to_install > 0 then
+					require("nvim-treesitter").install(to_install)
+				end
+			end,
+			config = function(_, _)
+				vim.api.nvim_create_autocmd("FileType", {
+					callback = function()
+						pcall(vim.treesitter.start)
+					end,
 				})
-			end
+			end,
 		},
 		{
 			"MunifTanjim/nui.nvim",
@@ -1226,12 +1231,7 @@ local function setup()
 			lazy = false,
 			opts = { keymaps = { useDefaults = false } },
 		},
-		{
-			"nvim-neorg/neorg",
-			version = "*", -- Pin Neorg to the latest stable release
-			opts = {},
-			ft = { 'neorg' },
-		},
+		
 		{
 			"folke/noice.nvim",
 			event = "VeryLazy",

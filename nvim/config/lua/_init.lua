@@ -148,12 +148,11 @@ vim.opt.foldlevel = 1
 vim.cmd [[syntax on]]
 vim.cmd [[filetype plugin indent on]]
 
--- Use treesitter highlighting for TS/TSX instead of slow regex syntax
+-- Disable regex syntax for TS/JS (treesitter handles it)
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
 	callback = function()
 		vim.cmd("syntax off")
-		vim.treesitter.start()
 	end,
 })
 
