@@ -82,6 +82,33 @@ local performance_mode = false
 
 vim.lsp.config('jsonls', {
 	capabilities = capabilities,
+	cmd = { 'vscode-json-language-server', '--stdio' },
+	settings = {
+		json = {
+			schemas = {
+				{
+					fileMatch = { 'package.json' },
+					url = 'https://json.schemastore.org/package.json',
+				},
+				{
+					fileMatch = { 'tsconfig.json', 'tsconfig.*.json' },
+					url = 'https://json.schemastore.org/tsconfig.json',
+				},
+				{
+					fileMatch = { '.prettierrc', '.prettierrc.json', '.prettierrc.yml' },
+					url = 'https://json.schemastore.org/prettierrc.json',
+				},
+				{
+					fileMatch = { '.eslintrc', '.eslintrc.json', '.eslintrc.yml' },
+					url = 'https://json.schemastore.org/eslintrc.json',
+				},
+				{
+					fileMatch = { '.github/**/.github/workflows/*.yml' },
+					url = 'https://json.schemastore.org/github-workflow.json',
+				},
+			},
+		},
+	},
 })
 
 
@@ -111,7 +138,7 @@ vim.lsp.config.ts_ls = {
 			},
 			suggest = {
 				autoImports = not performance_mode, -- Only disable autoimports in perf mode
-				enabled = true,                 -- Always keep suggestions enabled
+				enabled = true,             -- Always keep suggestions enabled
 			},
 		},
 		javascript = {
@@ -121,7 +148,7 @@ vim.lsp.config.ts_ls = {
 			},
 			suggest = {
 				autoImports = not performance_mode, -- Only disable autoimports in perf mode
-				enabled = true,                 -- Always keep suggestions enabled
+				enabled = true,             -- Always keep suggestions enabled
 			},
 		},
 	},
@@ -284,7 +311,7 @@ vim.lsp.config.vtsls = {
 				-- Performance optimizations
 				includePackageJsonAutoImports = performance_mode and "off" or "auto",
 				updateImportsOnFileMove = performance_mode and "never" or "prompt",
-				disableSuggestions = false,               -- Keep suggestions enabled
+				disableSuggestions = false,           -- Keep suggestions enabled
 				quotePreference = "single",
 				includeCompletionsForImportStatements = true, -- Keep completions enabled
 				includeCompletionsForModuleExports = false,
@@ -306,7 +333,7 @@ vim.lsp.config.vtsls = {
 			suggest = {
 				completeFunctionCalls = false,
 				autoImports = not performance_mode, -- Only disable autoimports in perf mode
-				enabled = true,                 -- Keep suggestions enabled
+				enabled = true,             -- Keep suggestions enabled
 			},
 			workspaceSymbol = {
 				search = {
@@ -360,7 +387,7 @@ vim.lsp.config.vtsls = {
 			suggest = {
 				completeFunctionCalls = false,
 				autoImports = not performance_mode, -- Only disable autoimports in perf mode
-				enabled = true,                 -- Keep suggestions enabled
+				enabled = true,             -- Keep suggestions enabled
 			},
 			format = {
 				enable = false,
@@ -400,8 +427,8 @@ vim.lsp.config.vtsls = {
 				plugins = {},
 
 				-- Performance optimizations
-				useSyntaxServer = "never",                        -- Disabled for monorepo performance
-				separateSyntaxServer = false,                     -- Disabled for monorepo performance
+				useSyntaxServer = "never",                    -- Disabled for monorepo performance
+				separateSyntaxServer = false,                 -- Disabled for monorepo performance
 				maxFileSize = performance_mode and 524288 or 1048576, -- 512KB in perf mode, 1MB otherwise
 
 				-- Disable expensive features
@@ -409,15 +436,15 @@ vim.lsp.config.vtsls = {
 				enable = {
 					-- Keep essential features, disable only expensive ones
 					semanticHighlighting = false,
-					completion = true,  -- Always keep completion
-					hover = true,       -- Always keep hover (essential!)
+					completion = true, -- Always keep completion
+					hover = true,  -- Always keep hover (essential!)
 					signatureHelp = true, -- Always keep signature help
-					definition = true,  -- Always keep go-to-definition (essential!)
-					references = true,  -- Always keep references (essential!)
+					definition = true, -- Always keep go-to-definition (essential!)
+					references = true, -- Always keep references (essential!)
 					documentHighlight = false,
 					documentSymbol = true, -- Always keep for navigation
 					workspaceSymbol = false, -- Expensive in large projects
-					codeAction = true,  -- Always keep code actions
+					codeAction = true, -- Always keep code actions
 					codeLens = false,
 					documentFormatting = false,
 					documentRangeFormatting = false,
@@ -433,7 +460,7 @@ vim.lsp.config.vtsls = {
 				},
 
 				-- Logging optimizations
-				logFile = nil,    -- Disable file logging
+				logFile = nil, -- Disable file logging
 				logVerbosity = "off", -- Minimal logging
 
 				-- Cache optimizations
@@ -522,13 +549,39 @@ vim.lsp.config.biome = {
 	on_attach = on_attach,
 }
 
+-- just-lsp: Language server for justfiles
+vim.lsp.config('just', {
+	cmd = { 'just-lsp' },
+	filetypes = { 'just' },
+	root_markers = { 'justfile', 'Justfile', '.justfile' },
+	capabilities = capabilities,
+})
+
+-- oxlint: Fast linting for JS/TS (complements biome/vtsls)
+vim.lsp.config('oxlint', {
+	cmd = { 'oxlint', '--lsp-mode' },
+	filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
+	root_markers = { 'oxlint.json', 'oxlintrc.json', 'package.json', '.git' },
+	capabilities = capabilities,
+	settings = {
+		oxlint = {
+			-- disable rules that conflict with biome
+			rules = {
+				correctness = {
+					-- let biome handle formatting
+				},
+			},
+		},
+	},
+})
+
 vim.lsp.config('lua_ls', {
 	on_init = function(client)
 		if client.workspace_folders then
 			local path = client.workspace_folders[1].name
 			if
-					path ~= vim.fn.stdpath('config')
-					and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc'))
+				 path ~= vim.fn.stdpath('config')
+				 and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc'))
 			then
 				return
 			end
@@ -612,13 +665,19 @@ vim.api.nvim_create_autocmd({ "CursorHold" }, {
 -- Update time for diagnostics
 vim.opt.updatetime = 300
 
+local function with_handler_config(handler, config)
+	return function(err, result, ctx, handler_config)
+		return handler(err, result, ctx, vim.tbl_deep_extend("force", handler_config or {}, config))
+	end
+end
+
 -- LSP hover and signature help styling
-vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+vim.lsp.handlers['textDocument/hover'] = with_handler_config(
 	vim.lsp.handlers.hover,
 	{ border = 'none' }
 )
 
-vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
+vim.lsp.handlers['textDocument/signatureHelp'] = with_handler_config(
 	vim.lsp.handlers.signature_help,
 	{ border = 'none' }
 )
@@ -626,36 +685,26 @@ vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
 -- Diagnostic configuration
 vim.diagnostic.config({
 	virtual_text = false,
+	update_in_insert = false,
 	severity_sort = true,
 	float = {
 		border = 'none',
 		source = false,
 	},
-})
-
--- Advanced performance optimizations
-vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx)
-	vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx)
-end
-
-vim.diagnostic.config {
-	virtual_text = false,
-	update_in_insert = false,
-	severity_sort = true,
 	signs = {
 		severity_limit = "Error",
 	},
-}
+})
 
 -- Code action timeout optimized for refactoring
-vim.lsp.handlers['textDocument/codeAction'] = vim.lsp.with(
+vim.lsp.handlers['textDocument/codeAction'] = with_handler_config(
 	vim.lsp.handlers['textDocument/codeAction'], {
 		timeout_ms = 3000, -- 3 seconds for refactoring operations
 	}
 )
 
 -- Minimal logging
-vim.lsp.set_log_level("ERROR")
+vim.lsp.log.set_level("ERROR")
 
 -- Neovim performance optimizations
 vim.opt.maxmempattern = 5000
@@ -776,7 +825,8 @@ function _G.debug_all_code_actions()
 		if client.server_capabilities.codeActionProvider then
 			local cap = client.server_capabilities.codeActionProvider
 			if type(cap) == "table" and cap.codeActionKinds then
-				print(string.format("📋 %s supports code action kinds: %s", client.name, table.concat(cap.codeActionKinds, ", ")))
+				print(string.format("📋 %s supports code action kinds: %s", client.name,
+					table.concat(cap.codeActionKinds, ", ")))
 			else
 				print(string.format("📋 %s supports code actions (no specific kinds listed)", client.name))
 			end
@@ -1018,14 +1068,19 @@ local js = {
 			cmd = { "prettier", "--stdin-filepath", "%" },
 		})
 	}),
-	formatters.if_file_exists({
-		pattern = { "biome.json", "biome.jsonc" },
-		stop_path = stop_path,
-		formatter = formatters.shell({
-			cmd = { "biome", "format", "--fix", "--stdin-file-path", "%" },
-		})
-	}),
+	-- formatters.if_file_exists({
+	--   pattern = { "biome.json", "biome.jsonc" },
+	--   stop_path = stop_path,
+	--   formatter = formatters.shell({
+	--     cmd = { "npx", "--silent", "-y", "@biomejs/biome@" .. (vim.g.bop_biome_version or "latest"), "format", "--fix", "--stdin-file-path", "%" },
+	--   })
+	-- }),
 }
+
+-- oxfmt formatter for JS/TS/JSON (used as fallback when no prettier/biome config)
+local oxfmt_fmt = formatters.shell({
+	cmd = { 'oxfmt', '--stdin-filepath', '%' },
+})
 
 format_on_save.setup({
 	stderr_loglevel = vim.log.levels.OFF,
@@ -1053,6 +1108,7 @@ format_on_save.setup({
 		terraform = formatters.lsp,
 		yaml = formatters.lsp,
 		gleam = formatters.lsp,
+		just = formatters.lsp,
 
 		-- my_custom_formatter = function()
 		-- 	if vim.api.nvim_buf_get_name(0):match("/README.md$") then
@@ -1062,7 +1118,7 @@ format_on_save.setup({
 		-- 	end
 		-- end,
 
-		javascript = js,
+		javascript = vim.list_extend({}, js), -- copy js chain, don't mutate original
 		typescript = js,
 		svelte = js,
 		typescriptreact = js,
@@ -1073,3 +1129,6 @@ format_on_save.setup({
 vim.lsp.enable('biome');
 vim.lsp.enable('vtsls');
 vim.lsp.enable('lua_ls');
+vim.lsp.enable('jsonls');
+vim.lsp.enable('just');
+vim.lsp.enable('oxlint');
