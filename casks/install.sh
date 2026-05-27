@@ -41,9 +41,15 @@ install_casks() {
 }
 
 # Main script execution
-install_homebrew
+if ! command -v brew &>/dev/null; then
+  echo "=================================="
+  echo "Homebrew not found. Run brew/install.sh first."
+  echo "=================================="
+  exit 1
+fi
 install_casks
 
 echo "=================================="
 echo "All specified applications have been installed."
 echo "=================================="
+

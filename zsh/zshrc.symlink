@@ -4,6 +4,12 @@ export DOTFILES=$HOME/.dotfiles
 # your project folder that we can `c [tab]` to
 export PROJECTS=~/Projects
 
+autoload -Uz compinit
+compinit
+
+# load zsnap before anything
+source $DOTFILES/zsh/znap/znap.zsh
+
 # Stash your environment variables in ~/.localrc. This means they'll stay out
 # of your main dotfiles repository (which may be public, like this one), but
 # you'll have access to them in your scripts.
@@ -19,22 +25,21 @@ config_files=($DOTFILES/**/*.zsh)
 # load the path files
 for file in ${(M)config_files:#*/path.zsh}
 do
+	echo $file
   source $file
 done
 
-# load everything but the path and completion files
-for file in ${${config_files:#*/path.zsh}:#*/completion.zsh}
+# load everything but the path, completion, and znap files
+for file in ${${${config_files:#*/path.zsh}:#*/completion.zsh}:#*/znap.zsh}
 do
+	echo $file
   source $file
 done
-
-# initialize autocomplete here, otherwise functions won't be loaded
-autoload -U compinit
-compinit
 
 # load every completion after autocomplete loads
 for file in ${(M)config_files:#*/completion.zsh}
 do
+	echo $file
   source $file
 done
 
@@ -54,13 +59,10 @@ zle -N down-line-or-beginning-search
 #   tmux attach -t default || tmux new -s default
 # fi
 
-export TERM="xterm-kitty"
+export TERM="xterm-ghostty"
 
 bindkey -v
 bindkey "^[M" accept-line
 bindkey "^B" backward-word
 bindkey "^N" forward-word
 bindkey "^R" history-incremental-search-backward
-
-export LUA_CPATH="/Users/bruno/.local/share/sketchybar_lua/sketchybar.so;;"
-

@@ -1,2 +1,22 @@
-
 .aider*
+
+# Zsh compiled files
+*.zwc
+
+# macOS metadata
+.DS_Store
+
+# Neovim runtime artifacts
+nvim/config/.undo/
+nvim/config/.backup/
+nvim/config/.swp/
+nvim/config/.mcphub/
+nvim/config/.unipi/
+nvim/config/.cursor/
+nvim/config/bkp_lsp/
+nvim/config/::W
+nvim/config/sessions/
+
+# Neovim log files
+nvim/config/tmux-client-*.log
+nvim/config/*.log
