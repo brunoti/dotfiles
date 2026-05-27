@@ -1,5 +1,3 @@
-autoload -Uz compinit
-compinit
 # Git version checking
 autoload -Uz is-at-least
 git_version="${${(As: :)$(git version 2>/dev/null)}[3]}"
@@ -22,7 +20,8 @@ function _git_log_prettily(){
     git log --pretty=$1
   fi
 }
-compdef _git _git_log_prettily=git-log
+
+# compdef _git _git_log_prettily=git-log
 
 # Warn if the current branch is a WIP
 function work_in_progress() {
@@ -102,7 +101,7 @@ function gccd() {
   command git clone --recurse-submodules "$@"
   [[ -d "$_" ]] && cd "$_" || cd "${${_:t}%.git}"
 }
-compdef _git gccd=git-clone
+# compdef _git gccd=git-clone
 
 alias gcl='git clone --recurse-submodules'
 alias gclean='git clean -id'
@@ -132,10 +131,10 @@ alias gdw='git diff --word-diff'
 function gdnolock() {
   git diff "$@" ":(exclude)package-lock.json" ":(exclude)*.lock"
 }
-compdef _git gdnolock=git-diff
+# compdef _git gdnolock=git-diff
 
 function gdv() { git diff -w "$@" | view - }
-compdef _git gdv=git-diff
+# compdef _git gdv=git-diff
 
 alias gf='git fetch'
 # --jobs=<n> was added in git 2.8
@@ -153,12 +152,12 @@ function ggf() {
   [[ "$#" != 1 ]] && local b="$(git_current_branch)"
   git push --force origin "${b:=$1}"
 }
-compdef _git ggf=git-checkout
+# compdef _git ggf=git-checkout
 function ggfl() {
   [[ "$#" != 1 ]] && local b="$(git_current_branch)"
   git push --force-with-lease origin "${b:=$1}"
 }
-compdef _git ggfl=git-checkout
+# compdef _git ggfl=git-checkout
 
 function ggl() {
   if [[ "$#" != 0 ]] && [[ "$#" != 1 ]]; then
@@ -168,7 +167,7 @@ function ggl() {
     git pull origin "${b:=$1}"
   fi
 }
-compdef _git ggl=git-checkout
+# compdef _git ggl=git-checkout
 
 function ggp() {
   if [[ "$#" != 0 ]] && [[ "$#" != 1 ]]; then
@@ -178,7 +177,7 @@ function ggp() {
     git push origin "${b:=$1}"
   fi
 }
-compdef _git ggp=git-checkout
+# compdef _git ggp=git-checkout
 
 function ggpnp() {
   if [[ "$#" == 0 ]]; then
@@ -187,13 +186,13 @@ function ggpnp() {
     ggl "${*}" && ggp "${*}"
   fi
 }
-compdef _git ggpnp=git-checkout
+# compdef _git ggpnp=git-checkout
 
 function ggu() {
   [[ "$#" != 1 ]] && local b="$(git_current_branch)"
   git pull --rebase origin "${b:=$1}"
 }
-compdef _git ggu=git-checkout
+# compdef _git ggu=git-checkout
 
 alias ggpur='ggu'
 alias ggpull='git pull origin "$(git_current_branch)"'

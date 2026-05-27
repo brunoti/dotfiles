@@ -3,6 +3,8 @@ local lib_vim = require('lib.vim')
 
 -- make it faster
 vim.opt.updatetime = 300
+
+-- list mode: show whitespace chars
 -- fix encoding
 vim.opt.encoding = 'utf-8'
 -- TextEdit might fail if hidden is not set.
@@ -17,6 +19,12 @@ vim.opt.swapfile = false
 vim.opt.updatecount = 0
 
 vim.o.exrc = true
+
+-- Disable unused remote providers to keep :checkhealth provider clean.
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
 
 vim.opt.foldmethod = "manual"
 -- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
@@ -122,6 +130,10 @@ vim.opt.showmatch = true
 -- how many tenths of a second to blink
 vim.opt.mat = 2
 vim.opt.updatetime = 300
+
+-- list mode: show whitespace chars
+vim.opt.list = true
+vim.opt.listchars = { tab = "▷ ", leadmultispace = "›   ", trail = "·", nbsp = "⍽" }
 -- vim.opt.signcolumn = "yes"
 -- -- prompt message options
 -- vim.opt.shortmess = "atToOFc"
@@ -130,11 +142,11 @@ vim.opt.updatetime = 300
 -- tab respects 'tabstop', 'shiftwidth', and 'softtabstop'
 vim.opt.smarttab = true
 -- the visible width of tabs
-vim.opt.tabstop = 2
+vim.opt.tabstop = 3
 -- edit as if the tabs are 4 characters wide
-vim.opt.softtabstop = 2
+vim.opt.softtabstop = 3
 -- number of spaces to use for indent and unindent
-vim.opt.shiftwidth = 2
+vim.opt.shiftwidth = 3
 -- round indent to a multiple of 'shiftwidth'
 vim.opt.shiftround = true
 
@@ -164,6 +176,8 @@ vim.cmd [[
   autocmd FileType cabal setlocal expandtab
   autocmd FileType cabal setlocal tabstop=4
   autocmd FileType cabal setlocal shiftwidth=4
+
+  autocmd FileType markdown setlocal expandtab
 ]]
 
 vim.opt.undodir = os.getenv("HOME") .. "/.config/nvim/.undo"

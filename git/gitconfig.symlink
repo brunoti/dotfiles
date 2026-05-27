@@ -1,52 +1,90 @@
 # Local/private config goes in the include
 [include]
-        path = ~/.gitconfig.local
+  path = ~/.gitconfig.local
 [hub]
-        protocol = https
+  protocol = https
 [alias]
-        co = checkout
-        promote = !$DOTFILES/bin/git-promote
-        wtf     = !$DOTFILES/bin/git-wtf
-        rank-contributors = !$DOTFILES/bin/git-rank-contributors
-        count   = !git shortlog -sn
+  co = checkout
+  promote = !$DOTFILES/bin/git-promote
+  wtf     = !$DOTFILES/bin/git-wtf
+  rank-contributors = !$DOTFILES/bin/git-rank-contributors
+  count   = !git shortlog -sn
 [color]
-        diff = auto
-        status = auto
-        branch = auto
-        ui = true
+  diff = auto
+  status = auto
+  branch = auto
+  ui = true
 [core]
-        excludesfile = ~/.gitignore
-	editor = nvim
-	fsmonitor = true
-	untrackedcache = true
-	preloadindex = true
+  excludesfile = ~/.gitignore
+  editor = nvim
+  fsmonitor = true
+  untrackedcache = true
+  preloadindex = true
+  pager = delta
 [apply]
-        whitespace = nowarn
+  whitespace = nowarn
 [mergetool]
-        keepBackup = false
+  keepBackup = false
 [difftool]
-        prompt = false
+  prompt = false
 [help]
-        autocorrect = 1
+  autocorrect = 1
 [push]
-        # See `git help config` (search for push.default)
-        # for more information on different options of the below setting.
-        #
-        # Setting to git 2.0 default to suppress warning message
-        default = simple
+  default = simple
 [credential]
-	helper = osxkeychain
+  helper = osxkeychain
 [user]
-	name = Bruno Oliveira de Paula
-	email = brunohdbass@gmail.com
+  name = Bruno Oliveira de Paula
+  email = brunohdbass@gmail.com
 [rerere]
-	enabled = 1
+  enabled = 1
 [init]
-	defaultBranch = main
+  defaultBranch = main
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
 [pull]
-	rebase = true
+  rebase = true
+[maintenance]
+  repo = /Users/bruno/Git/fast-syntax-highlighting
+  repo = /Users/bruno/Git/ohmyzsh
+  repo = /Users/bruno/Git/pure
+  repo = /Users/bruno/Git/zsh-async
+  repo = /Users/bruno/Git/zsh-autocomplete
+  repo = /Users/bruno/Git/zsh-autopair
+  repo = /Users/bruno/Git/zsh-autosuggestions
+  repo = /Users/bruno/Git/zsh-colored-man-pages
+  repo = /Users/bruno/Git/zsh-snap
+  repo = /Users/bruno/Git/zsh-syntax-highlighting
+  repo = /Users/bruno/Git/zsh-vi-mode
+  repo = /Users/bruno/Git/zsh-yarn-autocompletions
+  repo = /Users/bruno/.local/znap
+  repo = /Users/bruno/.local/ael-code/zsh-colored-man-pages
+  repo = /Users/bruno/.local/hlissner/zsh-autopair
+  repo = /Users/bruno/.local/mafredri/zsh-async
+  repo = /Users/bruno/.local/marlonrichert/zsh-autocomplete
+  repo = /Users/bruno/.local/ohmyzsh/ohmyzsh
+  repo = /Users/bruno/.local/sindresorhus/pure
+  repo = /Users/bruno/.local/zdharma/fast-syntax-highlighting
+  repo = /Users/bruno/.local/zsh-users/zsh-autosuggestions
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  line-numbers = true
+  side-by-side = true
+  minus-style                   = syntax "#37222c"
+  minus-non-emph-style          = syntax "#37222c"
+  minus-emph-style              = syntax "#713137"
+  minus-empty-line-marker-style = syntax "#37222c"
+  line-numbers-minus-style      = "#914c54"
+  plus-style                    = syntax "#20303b"
+  plus-non-emph-style           = syntax "#20303b"
+  plus-emph-style               = syntax "#2c5a66"
+  plus-empty-line-marker-style  = syntax "#20303b"
+  line-numbers-plus-style       = "#449dab"
+  line-numbers-zero-style       = "#3b4261"
+[merge]
+  conflictStyle = zdiff3

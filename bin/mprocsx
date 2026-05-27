@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Check if mprocs.yml exists in the current directory
+if [[ ! -f mprocs.yml ]]; then
+    echo "mprocs.yml not found. Exiting."
+    exit 1
+fi
+
+# Check if yq is installed
+if ! command -v yq >/dev/null 2>&1; then
+    echo "yq is required but not installed. Exiting."
+    exit 1
+fi
+
+# Check for before_script in mprocs.yml
+before_script=$(yq '.before_script' mprocs.yml)
+if [[ -n "$before_script" ]]; then
+    echo "Running before_script from mprocs.yml..."
+    bash -c "$before_script"
+fi
+
+echo "Running mprocs with mprocs.yml..."
+mprocs --config mprocs.yml
+
+# vi:ft=bash

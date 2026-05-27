@@ -1,23 +1,58 @@
 local wezterm = require 'wezterm'
 
-return {
-  -- Import Catppuccin-Mocha theme
-  color_scheme = "Catppuccin Mocha",
-
-  -- Font settings
-  font_size = 15.0,
-  line_height = 2.5,
-  bold_brightens_ansi_colors = true,
-  freetype_load_flags = 'DEFAULT',
-  freetype_load_target = 'Light',
-  front_end = 'Software',
-  font = wezterm.font_with_fallback({
+local nerd_font = function(font)
+  return wezterm.font_with_fallback({
+    font,
     {
-      family = "CommitMono Nerd Font",
-      harfbuzz_features = {"ss01", "ss02", "ss03", "ss04", "ss05"},
-      weight = "Regular",
+      family = "Symbols Nerd Font Mono",
+      scale = 1.0,
     },
-  }),
+  })
+end
+
+return {
+  color_scheme = "Tokyo Night",
+
+  enable_kitty_graphics = true,
+
+  enable_csi_u_key_encoding = true,
+  -- Font settings
+  font_size = 13.5,
+  line_height = 1.2,
+  bold_brightens_ansi_colors = false,
+  font = nerd_font {
+    family = "Iosevka",
+    weight = "Medium",
+  },
+  font_rules = {
+    -- {
+    -- 	intensity = 'Bold',
+    -- 	italic = true,
+    -- 	font = nerd_font {
+    -- 		family = 'Victor Mono',
+    -- 		weight = 'Bold',
+    -- 		style = "Italic",
+    -- 	},
+    -- },
+    -- {
+    -- 	italic = true,
+    -- 	intensity = 'Half',
+    -- 	font = nerd_font {
+    -- 		family = 'Victor Mono',
+    -- 		weight = 'Medium',
+    -- 		style = "Italic",
+    -- 	},
+    -- },
+    -- {
+    -- 	italic = true,
+    -- 	intensity = 'Normal',
+    -- 	font = nerd_font {
+    -- 		family = 'Victor Mono',
+    -- 		weight = 'DemiBold',
+    -- 		style = "Italic",
+    -- 	},
+    -- },
+  },
   use_fancy_tab_bar = false,
   show_tabs_in_tab_bar = false,
   show_new_tab_button_in_tab_bar = false,
@@ -28,6 +63,13 @@ return {
   -- Window settings
   window_frame = {
   },
+  window_padding = {
+    left = 10,
+    right = 10,
+    top = 16,
+    bottom = 16,
+  },
+  window_decorations = "RESIZE",
   hide_tab_bar_if_only_one_tab = true,
 
   cursor_blink_rate = 0,
@@ -43,9 +85,6 @@ return {
       action = wezterm.action.ReloadConfiguration
     },
   },
-
-  -- Add this to remove the title bar
-  -- window_decorations = "NONE",
 
   default_cursor_style = 'SteadyBlock',
 }

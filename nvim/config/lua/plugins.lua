@@ -367,7 +367,7 @@ local function setup()
 				keymap = {
 					preset = 'enter',
 					['<M-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
-					['<M-a>'] = { function(cmp) cmp.show({ providers = { 'codeium', } }) end },
+					['<M-a>'] = { function(cmp) cmp.show({ providers = { 'codeium', 'minuet' } }) end },
 					['<M-s>'] = { function(cmp) cmp.show({ providers = { 'snippets' } }) end },
 					['<M-l>'] = { function(cmp) cmp.show({ providers = { 'lsp' } }) end },
 				},
@@ -2842,6 +2842,19 @@ local function setup()
 				})
 			end,
 		},
+		{
+			"timothyckl/tau.nvim",
+			lazy = false,
+			build = "cd cli && bun run build",
+			opts = {
+					api_url = "http://localhost:20128/v1",
+					api_key = vim.env.OMNIROUTE_API_KEY,
+					model = "auto/best-coding-fast",
+			},
+			keys = {
+				{ "<leader>ae", ":Tau<CR>", mode = "v", desc = "Tau: edit selection" },
+			},
+		}
 	})
 end
 

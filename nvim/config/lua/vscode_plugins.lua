@@ -62,11 +62,11 @@ require('lazy').setup({
 		},
 	},
 	{
-		'kyazdani42/nvim-web-devicons', -- optional, for file icons
+		'nvim-tree/nvim-web-devicons', -- optional, for file icons
 	},
 	-- nvim-tree: file explorer
 	{
-		'kyazdani42/nvim-tree.lua',
+		'nvim-tree/nvim-tree.lua',
 		cmd = {
 			"NvimTreeToggle",
 			"NvimTreeOpen",

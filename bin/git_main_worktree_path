@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+
+git worktree list | awk 'NR==1 {print $1}'

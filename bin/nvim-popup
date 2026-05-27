@@ -1,0 +1,22 @@
+#!/bin/bash
+
+TITLE=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --title)
+      TITLE="$2"
+      shift 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+POPUP_OPTS=(-E -b rounded -w 50% -h 50% -S fg=blue -d '#{pane_current_path}')
+[[ -n "$TITLE" ]] && POPUP_OPTS+=(-T "$TITLE")
+
+tmux display-popup "${POPUP_OPTS[@]}" nvim "$@"
+
+# vim: ft=sh

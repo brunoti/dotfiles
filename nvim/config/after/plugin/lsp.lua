@@ -542,7 +542,7 @@ vim.lsp.config.biome = {
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "json", "jsonc" },
 
 	-- Root directory markers
-	root_markers = { "biome.json", "biome.jsonc", ".git" },
+	root_markers = { "biome.json", "biome.jsonc" },
 
 	-- Capabilities and attach function
 	capabilities = capabilities,
@@ -561,7 +561,7 @@ vim.lsp.config('just', {
 vim.lsp.config('oxlint', {
 	cmd = { 'oxlint', '--lsp-mode' },
 	filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
-	root_markers = { 'oxlint.json', 'oxlintrc.json', 'package.json', '.git' },
+	root_markers = { 'oxlint.json', 'oxlintrc.json', 'package.json' },
 	capabilities = capabilities,
 	settings = {
 		oxlint = {

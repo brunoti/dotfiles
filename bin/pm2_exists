@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Check if a PM2 process exists by name using jq
+# Usage: pm2_exists <process_name>
+# Returns: 0 if exists, 1 if not found, 2 if error
+
+set -euo pipefail
+
+# Validate arguments
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <process_name>"
+  exit 2
+fi
+
+process_name="$1"
+
+# Check dependencies
+if ! command -v pm2 &> /dev/null; then
+  echo "Error: pm2 command not found" >&2
+  exit 2
+fi
+
+if ! command -v jq &> /dev/null; then
+  echo "Error: jq command not found" >&2
+  exit 2
+fi
+
+# Check if process exists
+if pm2 jlist | jq -e --arg name "$process_name" 'any(.[]?; .name == $name)' > /dev/null 2>&1; then
+  exit 0  # Process exists
+else
+  exit 1  # Process not found
+fi
