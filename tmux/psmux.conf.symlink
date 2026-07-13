@@ -1,0 +1,132 @@
+##### Prefix / core ############################################################
+unbind-key C-b
+set-option -g prefix C-a
+bind-key M-a send-prefix
+
+# Faster ESC, large scrollback, mouse, focus events.
+set-option -s escape-time 0
+set-option -g history-limit 100000
+set-option -g mouse on
+set-option -g focus-events on
+
+# Index from 1.
+set-option -g base-index 1
+
+# Vi-style modes.
+set-window-option -g mode-keys vi
+set-option -g status-keys vi
+
+# Window titles / names.
+set-window-option -g automatic-rename off
+set-option -g set-titles on
+set-option -g set-titles-string '#S:#W — #{b:pane_current_path}'
+
+# Passthrough.
+set-option -g allow-passthrough on
+
+##### Windows / panes #########################################################
+# New window, same dir.
+bind-key c new-window -c "#{pane_current_path}"
+bind-key t new-window -c "#{pane_current_path}"
+bind-key r command-prompt "rename-window '%%'"
+
+# Splits, same dir.
+bind-key s split-window -v -c "#{pane_current_path}"
+bind-key v split-window -h -c "#{pane_current_path}"
+
+# Pane resize.
+bind-key -r < resize-pane -L 10
+bind-key -r > resize-pane -R 9
+bind-key -r - resize-pane -D 10
+bind-key -r + resize-pane -U 10
+
+# Prefix pane nav.
+bind-key -r h select-pane -L
+bind-key -r j select-pane -D
+bind-key -r k select-pane -U
+bind-key -r l select-pane -R
+
+# Alt window nav.
+bind-key -n M-u previous-window
+bind-key -n M-i next-window
+
+# Clear pane + history.
+bind-key C-l send-keys C-l \; send-keys -R \; clear-history
+
+##### Copy mode ###############################################################
+bind-key Escape copy-mode
+bind-key -n M-Escape copy-mode
+
+bind-key -T copy-mode-vi Escape send -X cancel
+bind-key -T copy-mode-vi v send -X begin-selection
+bind-key -T copy-mode-vi V send -X select-line
+bind-key -T copy-mode-vi r send -X rectangle-toggle
+
+##### Vim-aware navigation ####################################################
+unbind-key p
+unbind-key -n M-h
+unbind-key -n M-j
+unbind-key -n M-k
+unbind-key -n M-l
+unbind-key -n C-h
+unbind-key -n C-j
+unbind-key -n C-k
+unbind-key -n C-l
+
+bind-key -n M-h if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-h' { if -F '#{pane_at_left}' '' 'select-pane -L' }
+bind-key -n M-j if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-j' { if -F '#{pane_at_bottom}' '' 'select-pane -D' }
+bind-key -n M-k if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-k' { if -F '#{pane_at_top}' '' 'select-pane -U' }
+bind-key -n M-l if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-l' { if -F '#{pane_at_right}' '' 'select-pane -R' }
+bind-key -n M-n if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-n' { if -F '#{window_end_flag}' '' 'select-window -n' }
+bind-key -n M-p if-shell -F '#{||:#{==:#{pane_current_command},vim},#{||:#{==:#{pane_current_command},view},#{==:#{pane_current_command},nvim}}}' 'send-keys M-p' { if-shell -F '#{>:#{window_index},#{base-index}}' 'select-window -p' }
+
+bind-key -T copy-mode-vi M-h if -F '#{pane_at_left}' '' 'select-pane -L'
+bind-key -T copy-mode-vi M-j if -F '#{pane_at_bottom}' '' 'select-pane -D'
+bind-key -T copy-mode-vi M-k if -F '#{pane_at_top}' '' 'select-pane -U'
+bind-key -T copy-mode-vi M-l if -F '#{pane_at_right}' '' 'select-pane -R'
+bind-key -T copy-mode-vi M-n if -F '#{window_end_flag}' '' 'select-window -n'
+bind-key -T copy-mode-vi M-p if-shell -F '#{>:#{window_index},#{base-index}}' 'select-window -p'
+
+##### Popups / launchers ######################################################
+bind-key g display-popup -d "#{pane_current_path}" -w 60% -h 85% -B -E "lazygit"
+
+bind-key T choose-tree
+
+bind-key S run-shell "workmux sidebar"
+bind-key C-d display-popup -d "#{pane_current_path}" -w 90% -h 85% -S "fg=#7aa2f7" -E "workmux dashboard"
+
+bind-key f display-popup -d "#{pane_current_path}" -w 50% -h 60% -B
+
+##### Status / theme ##########################################################
+set-option -g status on
+set-option -g status-position top
+set-option -g status-justify left
+set-option -g status-style "fg=#c0caf5,bg=#1a1b26"
+set-option -g status-left-length 100
+set-option -g status-right-length 100
+set-option -g status-left-style NONE
+set-option -g status-right-style NONE
+
+# Left: session icon + name + gutter.
+set-option -g status-left " #[fg=#7aa2f7,bold]  #S #[default] #[fg=#3b4261]│  "
+# Right: prefix indicator (client_prefix conditional) + clock.
+set-option -g status-right "#{?client_prefix,#[fg=#1a1b26,bg=#7aa2f7,bold] LOCKED #[default],}#[fg=#3b4261] 󰥔 #[fg=#737aa2]%Y-%m-%d %H:%M"
+
+# Tab entries.
+set-window-option -g window-status-format "#[fg=#565f89]#I #[fg=#7aa2f7]󰖲 #[fg=#c0caf5]#W #[fg=#3b4261]│ #[fg=#bb9af7]󰉋 #[fg=#737aa2]#{b:pane_current_path}#[default]"
+set-window-option -g window-status-current-format "#[fg=#1a1b26,bg=#7aa2f7,bold] #I #[fg=#1a1b26,bg=#7aa2f7]󰖲 #W #[fg=#7aa2f7,bg=#292e42]#[fg=#bb9af7,bg=#292e42] 󰉋 #[fg=#c0caf5,bg=#292e42]#{b:pane_current_path} #[default]"
+# Separator.
+set-window-option -g window-status-separator "  #[fg=#3b4261]·#[default]  "
+
+set-window-option -g window-status-activity-style "fg=#e0af68,bg=default"
+set-window-option -g window-status-bell-style "fg=#f7768e,bg=default,bold"
+
+set-window-option -g mode-style "fg=#c0caf5,bg=#292e42"
+set-option -g message-style "fg=#c0caf5,bg=#292e42"
+set-option -g message-command-style "fg=#c0caf5,bg=#292e42"
+
+# Pane borders + titles.
+set-option -g pane-border-style "fg=#565f89"
+set-option -g pane-active-border-style "fg=#7aa2f7"
+set-option -g pane-border-status top
+set-option -g pane-border-format "#[fg=#{?pane_active,#7aa2f7,#565f89},bold] #{pane_index}: #{pane_title} #[default]"
