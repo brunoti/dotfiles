@@ -332,7 +332,7 @@ local function setup()
 				"Aider",
 			},
 			keys = {
-				{ "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Open Aider" },
+				-- { "<leader>a/", "<cmd>Aider toggle<cr>", desc = "Open Aider" },
 				-- { "<leader>as", "<cmd>AiderTerminalSend<cr>",      desc = "Send to Aider",                  mode = { "n", "v" } },
 				-- { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>",  desc = "Send Command To Aider" },
 				-- { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>",   desc = "Send Buffer To Aider" },
@@ -352,6 +352,7 @@ local function setup()
 			opts_extend = { "sources.default" },
 			dependencies = {
 				"mikavilpas/blink-ripgrep.nvim",
+				'Kaiser-Yang/blink-cmp-avante',
 			},
 			cmdline = {
 				enabled = false
@@ -367,9 +368,9 @@ local function setup()
 				keymap = {
 					preset = 'enter',
 					['<M-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
-					['<M-a>'] = { function(cmp) cmp.show({ providers = { 'codeium', 'minuet' } }) end },
+					['<M-a>'] = { function(cmp) cmp.show({ providers = { 'codeium' } }) end },
 					['<M-s>'] = { function(cmp) cmp.show({ providers = { 'snippets' } }) end },
-					['<M-l>'] = { function(cmp) cmp.show({ providers = { 'lsp' } }) end },
+					['<M-L>'] = { function(cmp) cmp.show({ providers = { 'lsp' } }) end },
 				},
 				appearance = {
 					-- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
@@ -480,18 +481,17 @@ local function setup()
 						}
 					}
 				},
-				trigger = { prefetch_on_insert = false },
 				snippets = { preset = 'luasnip' },
 				-- Default list of enabled providers defined so that you can extend it
 				-- elsewhere in your config, without redefining it, due to `opts_extend`
 				sources = {
 					default = {
 						'lazydev',
+						'avante',
 						'lsp',
 						'path',
 						'buffer',
 						'ripgrep',
-						'minuet',
 					},
 					per_filetype = {
 						minifiles = {
@@ -572,7 +572,226 @@ local function setup()
 								},
 							},
 						},
+						avante = {
+							name = "Avante",
+							module = "blink-cmp-avante",
+							opts = {},
+						},
 					},
+				},
+			},
+		},
+		-- supermaven AI code completion (disabled)
+		{
+			"supermaven-inc/supermaven-nvim",
+			enabled = false,
+		},
+		-- avante.nvim: AI-powered code assistance (Cursor-like)
+		{
+			"yetone/avante.nvim",
+			build = vim.fn.has("win32") ~= 0
+				 and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+				 or "make",
+			event = "VeryLazy",
+			version = false,
+			keys = {
+				{ "<leader>av", "<cmd>AvanteChat<cr>",           desc = "Avante: Toggle Chat" },
+				{ "<leader>aV", "<cmd>AvanteAsk<cr>",            desc = "Avante: Ask about current file" },
+				{ "<leader>aS", "<cmd>AvanteSwitchProvider<cr>", desc = "Avante: Switch Provider" },
+				{ "<leader>ab", "<cmd>AvanteBuild<cr>",          desc = "Avante: Build" },
+				{ "<leader>ar", "<cmd>AvanteShowRepoMap<cr>",    desc = "Avante: Show Repo Map" },
+				{ "<leader>ac", "<cmd>AvanteClearHistory<cr>",   desc = "Avante: Clear History" },
+				{ "<leader>af", "<cmd>AvanteFocus<cr>",          desc = "Avante: Focus Sidebar" },
+				{ "<leader>as", "<cmd>AvanteSidebar<cr>",        desc = "Avante: Toggle Sidebar" },
+			},
+			opts = function()
+				local function omniroute_provider(opts)
+					return {
+						__inherited_from = "openai",
+						endpoint = "https://omniroute.bop.lat/v1",
+						api_key = "sk-e820f0978f3cc328-fb997a-e157d0f4",
+						-- api_key_name = "OMNIROUTE_API_KEY",
+						name = 'omniroute/' .. opts.model,
+						model = opts.model,
+						timeout = opts.timeout or 60000,
+						extra_request_body = opts.extra or { temperature = 0.25, max_tokens = 64000 },
+					}
+				end
+
+				---@module 'avante'
+				---@type avante.Config
+				return {
+					provider = "pi-acp",
+					auto_suggestions_provider = false,
+					providers = {
+						["omniroute"] = omniroute_provider {
+							model = "auto/coding",
+						},
+						['omniroute/groq/qwen/qwen332b'] = omniroute_provider {
+							model = "groq/qwen/qwen332b",
+							extra = {
+								temperature = 0.2,
+								max_tokens = 2048,
+							},
+						},
+						["omniroute-free"] = omniroute_provider {
+							model = "free/fast",
+						},
+					},
+					input = {
+						provider = "snacks",
+						provider_opts = {
+							-- Additional snacks.input options
+							title = "Avante Input",
+							icon = " ",
+						},
+					},
+					selector = {
+						provider = "snacks",
+					},
+					-- ACP provider config for pi coding agent
+					acp_providers = {
+						["pi-acp"] = {
+							command = "pi-acp",
+							args = {},
+						},
+					},
+					behaviour = {
+						auto_suggestions = false,
+						auto_set_highlight_group = true,
+						auto_set_keymaps = true,
+						auto_apply_diff_after_generation = false,
+						support_paste_from_clipboard = false,
+						minimize_diff = true,
+						enable_token_counting = true,
+						auto_add_current_file = true,
+						auto_approve_tool_permissions = true,
+						acp_follow_agent_locations = true,
+					},
+					windows = {
+						position = "right",
+						wrap = true,
+						width = 30,
+					},
+					highlights = {
+						diff = {
+							current = "DiffText",
+							incoming = "DiffAdd",
+						},
+					},
+					diff = {
+						list_opener = "copen",
+					},
+					mappings = {
+						---@class AvanteConflictMappings
+						diff = {
+							ours = "co",
+							theirs = "ct",
+							all_theirs = "ca",
+							both = "cb",
+							cursor = "cc",
+							next = "]x",
+							prev = "[x",
+						},
+						suggestion = {
+							accept = "<M-l>",
+							next = "<M-]>",
+							prev = "<M-[>",
+							dismiss = "<C-]>",
+						},
+						jump = {
+							next = "]]",
+							prev = "[[",
+						},
+						submit = {
+							normal = "<CR>",
+							insert = "<C-s>",
+						},
+						cancel = {
+							normal = { "<C-c>", "<Esc>", "q" },
+							insert = { "<C-c>" },
+						},
+						-- NOTE: The following will be safely set by avante.nvim
+						ask = "<leader>aa",
+						new_ask = "<leader>an",
+						zen_mode = "<leader>az",
+						edit = "<leader>ae",
+						refresh = "<leader>ar",
+						focus = "<leader>af",
+						stop = "<leader>aS",
+						toggle = {
+							default = "<leader>at",
+							debug = "<leader>ad",
+							selection = "<leader>aC",
+							suggestion = "<leader>as",
+							repomap = "<leader>aR",
+						},
+						sidebar = {
+							expand_tool_use = "<S-Tab>",
+							next_prompt = "]p",
+							prev_prompt = "[p",
+							apply_all = "A",
+							apply_cursor = "a",
+							retry_user_request = "r",
+							edit_user_request = "e",
+							switch_windows = "<Tab>",
+							reverse_switch_windows = "<S-Tab>",
+							toggle_code_window = "x",
+							remove_file = "d",
+							add_file = "@",
+							close = { "q" },
+							---@type AvanteCloseFromInput | nil
+							close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
+							---@type AvanteToggleCodeWindowFromInput | nil
+							toggle_code_window_from_input = nil, -- e.g., { normal = "x", insert = "<C-;>" }
+						},
+						files = {
+							add_current = "<leader>ac", -- Add current buffer to selected files
+							add_all_buffers = "<leader>aB", -- Add all buffer files to selected files
+						},
+						select_model = "<leader>a?", -- Select model command
+						select_history = "<leader>ah", -- Select history command
+						select_acp_model = "<leader>aM", -- Select ACP agent model
+						select_acp_mode = "<leader>am", -- Select ACP agent mode
+						confirm = {
+							focus_window = "<C-w>f",
+							code = "c",
+							resp = "r",
+							input = "i",
+						},
+					},
+					suggestion = {
+						debounce = 600,
+						throttle = 600,
+					},
+				}
+			end,
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"MunifTanjim/nui.nvim",
+				"nvim-tree/nvim-web-devicons",
+				-- image pasting support
+				{
+					"HakonHarnes/img-clip.nvim",
+					event = "VeryLazy",
+					opts = {
+						default = {
+							embed_image_as_base64 = false,
+							prompt_for_file_name = false,
+							drag_and_drop = {
+								insert_mode = true,
+							},
+							use_absolute_path = true,
+						},
+					},
+				},
+				-- render markdown in avante chat (avante-only, not global markdown)
+				{
+					"MeanderingProgrammer/render-markdown.nvim",
+					opts = {
+						file_types = { "Avante" },
+					},
+					ft = { "Avante" },
 				},
 			},
 		},
@@ -725,7 +944,8 @@ local function setup()
 					indent = {
 						enabled = false,
 						filter = function(buf)
-							return vim.g.snacks_indent ~= false and vim.b[buf].snacks_indent ~= false and vim.bo[buf].buftype == ""
+							return vim.g.snacks_indent ~= false and vim.b[buf].snacks_indent ~= false and
+								 vim.bo[buf].buftype == ""
 						end,
 						char = "│",
 						only_scope = true,
@@ -799,7 +1019,7 @@ local function setup()
 					},
 					animation = { enabled = false },
 					bigfile = { enabled = true },
-					explorer = { enabled = true },
+					explorer = { enabled = false },
 					notifier = {
 						enabled = true,
 						level = vim.log.levels.DEBUG,
@@ -825,7 +1045,7 @@ local function setup()
 						autokeys = "123456789asdfghjkl",
 						preset = {
 							keys = {
-								{ icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+								{ icon = " ", key = "f", desc = "Find File", action = ":lua require('fff').find_files()" },
 								{ icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
 								{ icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.picker.recent({ filter = { cwd = vim.fn.getcwd() } })" },
 								{ icon = "", key = "w", desc = "Workspaces", action = ":lua require('app.workspace').picker()" },
@@ -2347,8 +2567,8 @@ local function setup()
 
 
 
-					highlights.BlinkCmpKindText            = { fg = tokyo_colors.red }
-					highlights.BlinkCmpSource              = { fg = tokyo_colors.fg_gutter }
+					highlights.BlinkCmpKindText = { fg = tokyo_colors.red }
+					highlights.BlinkCmpSource   = { fg = tokyo_colors.fg_gutter }
 
 
 					-- Colors for Snacks pickers
@@ -2815,31 +3035,59 @@ local function setup()
 			config = function()
 				require('minuet').setup({
 					provider = 'openai_fim_compatible',
-					n_completions = 1,
+					n_completions = 2,
 					context_window = 512,
 					provider_options = {
 						openai_fim_compatible = {
 							api_key = 'TERM',
-							name = 'Ollama',
-							end_point = 'http://bruno-home-mac-mini.local:11434/v1/completions',
-							model = 'qwen2.5-coder:7b',
+							name = 'LLMStudio',
+							end_point = 'http://localhost:1234/v1/completions',
+							model = 'deepseek/deepseek-r1-0528-qwen3-8b',
+							-- model = 'google/gemma-4-e4b',
 							optional = {
 								max_tokens = 56,
 								top_p = 0.9,
 							},
-							template = {
-								prompt = function(context_before_cursor, context_after_cursor, _)
-									return '<|fim_prefix|>'
-										.. context_before_cursor
-										.. '<|fim_suffix|>'
-										.. context_after_cursor
-										.. '<|fim_middle|>'
-								end,
-								suffix = false,
+							provider = {
+								-- Prioritize throughput for faster completion
+								sort = 'throughput',
 							},
+							-- disable thinking to avoid first token latency
+							reasoning_effort = 'none'
+							-- template = {
+							-- 	prompt = function(context_before_cursor, context_after_cursor, _)
+							-- 		return '<|fim_prefix|>'
+							-- 			 .. context_before_cursor
+							-- 			 .. '<|fim_suffix|>'
+							-- 			 .. context_after_cursor
+							-- 			 .. '<|fim_middle|>'
+							-- 	end,
+							-- 	suffix = false,
+							-- },
 						},
 					},
 				})
+			end,
+		},
+		{
+			'stevearc/conform.nvim',
+			---@module 'conform'
+			---@type conform.setupOpts
+			opts = {
+				formatters_by_ft = {
+					lua = { lsp_format = "first" },
+					json = { lsp_format = "fallback" },
+					jsonc = { lsp_format = "first" },
+					javascript = { "biome", "biome-check", "biome-organize-imports", lsp_format = "fallback" },
+					typescript = { "biome", "biome-check", "biome-organize-imports", lsp_format = "fallback" },
+				},
+				format_on_save = {
+					-- These options will be passed to conform.format()
+					timeout_ms = 500,
+				},
+			},
+			init = function()
+				vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
 			end,
 		},
 		{
@@ -2847,13 +3095,40 @@ local function setup()
 			lazy = false,
 			build = "cd cli && bun run build",
 			opts = {
-					api_url = "http://localhost:20128/v1",
-					api_key = vim.env.OMNIROUTE_API_KEY,
-					model = "auto/best-coding-fast",
+				api_url = "https://omniroute.bop.lat/v1",
+				api_key = vim.env.OMNIROUTE_API_KEY,
+				model = "free/fast",
 			},
 			keys = {
 				{ "<leader>ae", ":Tau<CR>", mode = "v", desc = "Tau: edit selection" },
 			},
+		},
+		{
+			"neovim/nvim-lspconfig",
+			lazy = false
+		},
+		{
+			'dmtrKovalenko/fff.nvim',
+			build = function()
+				-- downloads a prebuilt binary or falls back to cargo build
+				require("fff.download").download_or_build_binary()
+			end,
+			-- for nixos:
+			-- build = "nix run .#release",
+			opts = {
+				debug = {
+					enabled = true,
+					show_scores = true,
+				},
+			},
+			lazy = false,
+		},
+		{
+			"A7Lavinraj/fyler.nvim",
+			dependencies = { "nvim-mini/mini.icons" },
+			branch = "stable", -- Use stable branch for production
+			lazy = false, -- Necessary for `default_explorer` to work properly
+			opts = {}
 		}
 	})
 end

@@ -10,81 +10,96 @@ local nerd_font = function(font)
   })
 end
 
-return {
-  color_scheme = "Tokyo Night",
+local config = wezterm.config_builder()
 
-  enable_kitty_graphics = true,
+-- Tokyo Night Dark.
+config.color_scheme = "Tokyo Night"
+config.colors = {
+  cursor_bg = "#c0caf5",
+  cursor_border = "#c0caf5",
+  cursor_fg = "#1a1b26",
+  selection_bg = "#283457",
+  selection_fg = "#c0caf5",
+  split = "#7aa2f7",
+}
 
-  enable_csi_u_key_encoding = true,
-  -- Font settings
-  font_size = 13.5,
-  line_height = 1.2,
-  bold_brightens_ansi_colors = false,
-  font = nerd_font {
-    family = "Iosevka",
-    weight = "Medium",
-  },
-  font_rules = {
-    -- {
-    -- 	intensity = 'Bold',
-    -- 	italic = true,
-    -- 	font = nerd_font {
-    -- 		family = 'Victor Mono',
-    -- 		weight = 'Bold',
-    -- 		style = "Italic",
-    -- 	},
-    -- },
-    -- {
-    -- 	italic = true,
-    -- 	intensity = 'Half',
-    -- 	font = nerd_font {
-    -- 		family = 'Victor Mono',
-    -- 		weight = 'Medium',
-    -- 		style = "Italic",
-    -- 	},
-    -- },
-    -- {
-    -- 	italic = true,
-    -- 	intensity = 'Normal',
-    -- 	font = nerd_font {
-    -- 		family = 'Victor Mono',
-    -- 		weight = 'DemiBold',
-    -- 		style = "Italic",
-    -- 	},
-    -- },
-  },
-  use_fancy_tab_bar = false,
-  show_tabs_in_tab_bar = false,
-  show_new_tab_button_in_tab_bar = false,
-  enable_tab_bar = false,
-  adjust_window_size_when_changing_font_size = false,
-  cell_width = 1,
-
-  -- Window settings
-  window_frame = {
-  },
-  window_padding = {
-    left = 10,
-    right = 10,
-    top = 16,
-    bottom = 16,
-  },
-  window_decorations = "RESIZE",
-  hide_tab_bar_if_only_one_tab = true,
-
-  cursor_blink_rate = 0,
-
-  -- Scrollback settings
-  scrollback_lines = 9999999,
-
-  -- Keybindings
-  keys = {
-    {
-      key = "r",
-      mods = "CMD",
-      action = wezterm.action.ReloadConfiguration
+-- Ghostty-like rendering: one clean terminal surface, Nerd Font fallback,
+-- roomy line height, no tab chrome.
+config.font = nerd_font {
+  family = "Iosevka Nerd Font",
+  weight = "Medium",
+}
+config.font_size = 13.5
+config.line_height = 1.2
+config.cell_width = 1.0
+config.bold_brightens_ansi_colors = false
+config.font_rules = {
+  {
+    intensity = "Bold",
+    font = nerd_font {
+      family = "Iosevka Nerd Font",
+      weight = "Bold",
     },
   },
-
-  default_cursor_style = 'SteadyBlock',
+  {
+    italic = true,
+    font = nerd_font {
+      family = "Iosevka Nerd Font",
+      style = "Italic",
+    },
+  },
+  {
+    intensity = "Bold",
+    italic = true,
+    font = nerd_font {
+      family = "Iosevka Nerd Font",
+      weight = "Bold",
+      style = "Italic",
+    },
+  },
 }
+
+-- Terminal protocol features.
+config.enable_kitty_graphics = true
+config.enable_csi_u_key_encoding = true
+config.term = "wezterm"
+
+-- Window shape / spacing.
+config.window_decorations = "RESIZE"
+config.window_padding = {
+  left = 10,
+  right = 10,
+  top = 16,
+  bottom = 16,
+}
+config.adjust_window_size_when_changing_font_size = false
+config.window_background_opacity = 1.0
+config.inactive_pane_hsb = {
+  saturation = 0.95,
+  brightness = 0.85,
+}
+
+-- Native title still updates via OSC/tmux/`wezterm cli set-window-title`,
+-- which keeps ActivityWatch project tracking useful even with hidden chrome.
+config.use_fancy_tab_bar = false
+config.enable_tab_bar = false
+config.show_tabs_in_tab_bar = false
+config.show_new_tab_button_in_tab_bar = false
+config.hide_tab_bar_if_only_one_tab = true
+
+-- Cursor / scrollback.
+config.default_cursor_style = "SteadyBlock"
+config.cursor_blink_rate = 0
+config.scrollback_lines = 100000
+config.audible_bell = "Disabled"
+
+-- Keybindings.
+config.keys = {
+  {
+    key = "r",
+    mods = "CMD",
+    action = wezterm.action.ReloadConfiguration,
+  },
+}
+
+return config

@@ -1,175 +1,110 @@
+##### Prefix / core ############################################################
 unbind-key C-b
-
 set-option -g prefix C-a
+bind-key M-a send-prefix
 
-# Enable support for extended keys in tmux
-set -s extended-keys on
-set -g extended-keys-format csi-u
-set -as terminal-features 'xterm*:extkeys'
+# Faster ESC, large scrollback, mouse, focus events.
+set-option -s escape-time 0
+set-option -g history-limit 100000
+set-option -g mouse on
+set-option -g focus-events on
+set-option -g default-shell /bin/zsh
 
-bind M-a send-prefix
+# Index from 1.
+set-option -g base-index 1
 
-# Remove delay on pressing ESC
-set -s escape-time 0
+# Vi-style modes.
+set-window-option -g mode-keys vi
+set-option -g status-keys vi
 
-# New window, same folder
-bind c new-window -c "#{pane_current_path}"
+# Window titles / names.
+set-window-option -g automatic-rename off
+set-option -g set-titles on
+set-option -g set-titles-string '#S:#W — #{b:pane_current_path}'
 
+##### Terminal / keys / colors ################################################
+# Extended keys.
+set-option -s extended-keys on
+set-option -g extended-keys-format csi-u
+set-option -as terminal-features 'xterm*:extkeys,wezterm*:extkeys'
+
+# True color / passthrough.
+set-option -g default-terminal "tmux-256color"
+set-option -g allow-passthrough on
+set-option -ag terminal-overrides ",*:RGB"
+
+##### Windows / panes #########################################################
+# New window, same dir.
+bind-key c new-window -c "#{pane_current_path}"
+bind-key t new-window -c "#{pane_current_path}"
+bind-key r command-prompt "rename-window '%%'"
+
+# Splits, same dir.
+bind-key s split-window -v -c "#{pane_current_path}"
+bind-key v split-window -h -c "#{pane_current_path}"
+
+# Pane resize.
+bind-key -r < resize-pane -L 10
+bind-key -r > resize-pane -R 9
+bind-key -r - resize-pane -D 10
+bind-key -r + resize-pane -U 10
+
+# Prefix pane nav.
+bind-key -r h select-pane -L
+bind-key -r j select-pane -D
+bind-key -r k select-pane -U
+bind-key -r l select-pane -R
+
+# Alt window nav.
+bind-key -n M-u previous-window
+bind-key -n M-i next-window
+
+# Clear pane + history.
+bind-key C-l send-keys C-l \; send-keys -R \; clear-history
+
+##### Copy mode ###############################################################
 bind-key Escape copy-mode
 bind-key -n M-Escape copy-mode
 
-set-window-option -g mode-keys vi
 bind-key -T copy-mode-vi Escape send -X cancel
-bind-key -T copy-mode-vi 'v' send -X begin-selection
-bind-key -T copy-mode-vi 'V' send -X select-line
-bind-key -T copy-mode-vi 'r' send -X rectangle-toggle
-bind-key -T copy-mode-vi 'y' send -X copy-pipe-and-cancel 'pbcopy'
-bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "pbcopy"
-
+bind-key -T copy-mode-vi v send -X begin-selection
+bind-key -T copy-mode-vi V send -X select-line
+bind-key -T copy-mode-vi r send -X rectangle-toggle
+bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'pbcopy'
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel 'pbcopy'
 unbind-key -T copy-mode MouseDragEnd1Pane
 
-# use <prefix> s for horizontal split
-bind s split-window -v -c "#{pane_current_path}"
+##### Vim-aware navigation ####################################################
+unbind-key p
+unbind-key -n M-h
+unbind-key -n M-j
+unbind-key -n M-k
+unbind-key -n M-l
+unbind-key -n C-h
+unbind-key -n C-j
+unbind-key -n C-k
+unbind-key -n C-l
 
-# use <prefix> v for vertical split
-bind v split-window -h -c "#{pane_current_path}"
+is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\/)?g?\.?(view|n?vim?x?)(-wrapped)?(diff)?$'"
 
-# Presize panes more easily
-bind -r < resize-pane -L 10
-bind -r > resize-pane -R 9
-bind -r - resize-pane -D 10
-bind -r + resize-pane -U 10
+bind-key -n M-h if-shell "$is_vim" 'send-keys M-h' { if -F '#{pane_at_left}' '' 'select-pane -L' }
+bind-key -n M-j if-shell "$is_vim" 'send-keys M-j' { if -F '#{pane_at_bottom}' '' 'select-pane -D' }
+bind-key -n M-k if-shell "$is_vim" 'send-keys M-k' { if -F '#{pane_at_top}' '' 'select-pane -U' }
+bind-key -n M-l if-shell "$is_vim" 'send-keys M-l' { if -F '#{pane_at_right}' '' 'select-pane -R' }
+bind-key -n M-n if-shell "$is_vim" 'send-keys M-n' { if -F '#{window_end_flag}' '' 'select-window -n' }
+bind-key -n M-p if-shell "$is_vim" 'send-keys M-p' { if 'test #{window_index} -gt #{base-index}' 'select-window -p' }
 
-set-window-option -g mode-keys vi
-set -g base-index 1
-set -g status-keys vi
-set -g history-limit 100000
-set -g mouse on
+bind-key -T copy-mode-vi M-h if -F '#{pane_at_left}' '' 'select-pane -L'
+bind-key -T copy-mode-vi M-j if -F '#{pane_at_bottom}' '' 'select-pane -D'
+bind-key -T copy-mode-vi M-k if -F '#{pane_at_top}' '' 'select-pane -U'
+bind-key -T copy-mode-vi M-l if -F '#{pane_at_right}' '' 'select-pane -R'
+bind-key -T copy-mode-vi M-n if -F '#{window_end_flag}' '' 'select-window -n'
+bind-key -T copy-mode-vi M-p if 'test #{window_index} -gt #{base-index}' 'select-window -p'
 
-set-window-option -g automatic-rename off
-set-option -g set-titles off
-
-# True colors on tmux
-set -g default-terminal "xterm-ghostty"
-set -g allow-passthrough on
-set -ag terminal-overrides ",*:RGB"
-
-bind C-l send-keys C-l \; send-keys -R \; clear-history
-set-option -g default-shell /bin/zsh
-set-option -g focus-events on
-
-# tab navigation
-bind-key -n M-i next-window
-bind-key -n M-u previous-window
-
-bind-key t new-window -c "#{pane_current_path}"
-bind-key T clock-mode
-bind-key r command-prompt "rename-window '%%'"
-
-# List of plugins
-set -g @plugin 'tmux-plugins/tpm'
-set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'omerxx/tmux-floax'
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-set -g @plugin 'tmux-plugins/tmux-continuum'
-set -g @plugin 'tmux-plugins/tmux-open'
-# set -g @plugin 'Peter-McKinney/tmux-open-file-nvim'
-# set -g @plugin 'trevarj/tmux-open-nvim'
-set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
-set -g @plugin 'vndmp4/tmux-fzf-session-switch'
-
-
-# Move tmux status bar to the top
-set-option -g status-position top
-
-# Allow certain terminal features (like mouse support, focus reporting) to pass through to the application
-set-option -g allow-passthrough on
-
-# TokyoNight colors for Tmux
-
-set -g mode-style "fg=#c0caf5,bg=#292e42"
-
-set -g message-style "fg=#c0caf5,bg=#292e42"
-set -g message-command-style "fg=#c0caf5,bg=#292e42"
-
-set -g pane-border-style "fg=#565f89"
-set -g pane-active-border-style "fg=#ff9e64"
-
-set -g pane-border-status top
-set -g pane-border-format "#{pane_title}"
-
-set -g status "on"
-set -g status-justify "left"
-
-set -g status-style "fg=#c0caf5,bg=#1a1b26"
-
-set -g status-left-length "100"
-set -g status-right-length "100"
-
-set -g status-left-style NONE
-set -g status-right-style NONE
-
-# set -g status-left "#[fg=#1d202f,bg=#7aa2f7,bold] #S #[fg=#7aa2f7,bg=#1f2335,nobold,nounderscore,noitalics]"
-
+##### Popups / launchers ######################################################
 bind-key g display-popup -d "#{pane_current_path}" -w 60% -h 85% -B -E "HUSKY=0 lazygit"
 
-bind-key -r k select-pane -U
-bind-key -r j select-pane -D
-bind-key -r h select-pane -L
-bind-key -r l select-pane -R
-
-# Floax config
-set -g @floax-bind "f"
-set -g @floax-border-color "#7aa2f7"
-set -g @floax-width '50%'
-set -g @floax-height '60%'
-set -g @floax-text-color 'white'
-set -g @floax-session-name 'floax'
-# set -g @floax-title 'term'
-set -g @floax-change-path 'false'
-
-#: tmux-plugins/tmux-prefix-highlight support
-set -g @prefix_highlight_output_prefix ""
-set -g @prefix_highlight_output_suffix ""
-set -g @prefix_highlight_prefix_prompt 'LOCKED'
-
-set -g @fzf-goto-session 'S'
-
-set -g @continuum-restore 'on'
-set -g @continuum-save-interval '10'
-
-unbind-key p
-unbind-key -n M-l
-unbind-key -n M-h
-unbind-key -n M-k
-unbind-key -n M-j
-unbind-key -n C-l
-unbind-key -n C-h
-unbind-key -n C-k
-unbind-key -n C-j
-
-is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?\.?(view|n?vim?x?)(-wrapped)?(diff)?$'"
-
-bind-key -n 'M-h' if-shell "$is_vim" 'send-keys M-h' { if -F '#{pane_at_left}' '' 'select-pane -L' }
-bind-key -n 'M-j' if-shell "$is_vim" 'send-keys M-j' { if -F '#{pane_at_bottom}' '' 'select-pane -D' }
-bind-key -n 'M-k' if-shell "$is_vim" 'send-keys M-k' { if -F '#{pane_at_top}' '' 'select-pane -U' }
-bind-key -n 'M-l' if-shell "$is_vim" 'send-keys M-l' { if -F '#{pane_at_right}' '' 'select-pane -R' }
-bind-key -n 'M-n' if-shell "$is_vim" 'send-keys M-n' { if -F '#{window_end_flag}' '' 'select-window -n' }
-bind-key -n 'M-p' if-shell "$is_vim" 'send-keys M-p' { if 'test #{window_index} -gt #{base-index}' 'select-window -p' }
-
-bind-key -T copy-mode-vi 'M-h' if -F '#{pane_at_left}' '' 'select-pane -L'
-bind-key -T copy-mode-vi 'M-j' if -F '#{pane_at_bottom}' '' 'select-pane -D'
-bind-key -T copy-mode-vi 'M-k' if -F '#{pane_at_top}' '' 'select-pane -U'
-bind-key -T copy-mode-vi 'M-l' if -F '#{pane_at_right}' '' 'select-pane -R'
-bind-key -T copy-mode-vi 'M-n' if -F '#{window_end_flag}' '' 'select-window -n'
-bind-key -T copy-mode-vi 'M-p' if 'test #{window_index} -gt #{base-index}' 'select-window -p'
-
-run-shell "bash -c 'cd $HOME/tmux-lua && lua init.lua > /dev/null 2>&1; exit 0'"
-# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
-run '~/.tmux/plugins/tpm/tpm'
-# vim:ft=tmux
-
-bind-key "T" run-shell "sesh connect \"$(
+bind-key T run-shell "sesh connect \"$(
   sesh list -t --icons | fzf \
     --style=full \
     --no-sort --ansi --border-label ' sesh ' --prompt '  ' \
@@ -185,3 +120,83 @@ bind-key "T" run-shell "sesh connect \"$(
     --preview 'sesh preview {}'
 )\""
 
+bind-key S run-shell "workmux sidebar"
+bind-key C-d display-popup -d "#{pane_current_path}" -w 90% -h 85% -S "fg=#7aa2f7" -E "workmux dashboard"
+
+##### Status / theme ##########################################################
+set-option -g status on
+set-option -g status-position top
+set-option -g status-justify left
+set-option -g status-style "fg=#c0caf5,bg=#1a1b26"
+set-option -g status-left-length 100
+set-option -g status-right-length 100
+set-option -g status-left-style NONE
+set-option -g status-right-style NONE
+# Clear any prior custom status-format overrides (e.g. from tmux-lua) so tmux
+# falls back to native window-status-format rendering: this keeps the active
+# window visible on overflow and makes per-window click hit-testing resolve
+# correctly against the separator width. Unset the whole array, not per-index:
+# `set -gu status-format[0]` only empties slot 0 (rendering a blank bar) while
+# `set -gu status-format` restores the native default template.
+set-option -gu status-format
+
+# Left: session icon + name + gutter.
+set-option -g status-left " #[fg=#7aa2f7,bold]  #S #[default] #[fg=#3b4261]│  "
+# Right: prefix indicator (tmux-prefix-highlight) + clock.
+set-option -g status-right "#{prefix_highlight}#[fg=#3b4261] 󰥔 #[fg=#737aa2]%Y-%m-%d %H:%M"
+
+# Tab entries. Native window-status-format keeps the active window visible on
+# overflow and lets tmux resolve mouse clicks per-window.
+set-window-option -g window-status-format "#[fg=#565f89]#I #[fg=#7aa2f7]󰖲 #[fg=#c0caf5]#W #[fg=#3b4261]│ #[fg=#bb9af7]󰉋 #[fg=#737aa2]#{b:pane_current_path}#[default]"
+set-window-option -g window-status-current-format "#[fg=#1a1b26,bg=#7aa2f7,bold] #I #[fg=#1a1b26,bg=#7aa2f7]󰖲 #W #[fg=#7aa2f7,bg=#292e42]#[fg=#bb9af7,bg=#292e42] 󰉋 #[fg=#c0caf5,bg=#292e42]#{b:pane_current_path} #[default]"
+# Separator width MUST match what's drawn so click cell boundaries line up.
+set-window-option -g window-status-separator "  #[fg=#3b4261]·#[default]  "
+
+set-window-option -g window-status-activity-style "fg=#e0af68,bg=default"
+set-window-option -g window-status-bell-style "fg=#f7768e,bg=default,bold"
+
+set-window-option -g mode-style "fg=#c0caf5,bg=#292e42"
+set-option -g message-style "fg=#c0caf5,bg=#292e42"
+set-option -g message-command-style "fg=#c0caf5,bg=#292e42"
+# Pane borders + titles.
+# TokyoNight blue: #7aa2f7. Active title gets blue bg.
+set-option -g pane-border-style "fg=#565f89"
+set-option -g pane-active-border-style "fg=#7aa2f7"
+set-option -g pane-border-status top
+set-option -g pane-border-format "#[fg=#{?pane_active,#7aa2f7,#565f89},bold] #{pane_index}: #{pane_title} #[default]"
+
+##### Plugins ################################################################
+set-option -g @plugin 'tmux-plugins/tpm'
+set-option -g @plugin 'tmux-plugins/tmux-sensible'
+set-option -g @plugin 'omerxx/tmux-floax'
+set-option -g @plugin 'tmux-plugins/tmux-resurrect'
+set-option -g @plugin 'tmux-plugins/tmux-continuum'
+set-option -g @plugin 'tmux-plugins/tmux-open'
+set-option -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set-option -g @plugin 'vndmp4/tmux-fzf-session-switch'
+# set-option -g @plugin 'Peter-McKinney/tmux-open-file-nvim'
+# set-option -g @plugin 'trevarj/tmux-open-nvim'
+
+# Floax.
+set-option -g @floax-bind 'f'
+set-option -g @floax-border-color '#7aa2f7'
+set-option -g @floax-width '50%'
+set-option -g @floax-height '60%'
+set-option -g @floax-text-color 'white'
+set-option -g @floax-session-name 'floax'
+set-option -g @floax-change-path 'false'
+# set-option -g @floax-title 'term'
+
+# tmux-prefix-highlight.
+set-option -g @prefix_highlight_output_prefix ''
+set-option -g @prefix_highlight_output_suffix ''
+set-option -g @prefix_highlight_prefix_prompt 'LOCKED'
+
+# tmux-continuum.
+set-option -g @continuum-restore 'on'
+set-option -g @continuum-save-interval '10'
+
+# Initialize TMUX plugin manager. Keep last.
+run-shell '~/.tmux/plugins/tpm/tpm'
+
+# vim:ft=tmux
