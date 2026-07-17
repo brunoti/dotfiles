@@ -1,0 +1,45 @@
+"$schema" = "https://starship.rs/config-schema.json"
+palette = "tokyo_night"
+add_newline = false
+format = "$directory$git_branch$git_status$mise$cmd_duration$line_break$character"
+
+[directory]
+style = "bold blue"
+format = "[$path]($style) "
+truncation_length = 4
+truncate_to_repo = false
+
+[git_branch]
+symbol = "git:"
+style = "purple"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "red"
+format = "([$all_status$ahead_behind]($style) )"
+
+[mise]
+disabled = false
+symbol = "mise "
+style = "cyan"
+format = "via [$symbol$health]($style) "
+
+[cmd_duration]
+min_time = 1000
+style = "yellow"
+format = "took [$duration]($style) "
+
+[character]
+success_symbol = "[❯](green)"
+error_symbol = "[❯](red)"
+vimcmd_symbol = "[❮](purple)"
+
+[palettes.tokyo_night]
+foreground = "#c0caf5"
+background = "#1a1b26"
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+purple = "#bb9af7"
+cyan = "#7dcfff"
