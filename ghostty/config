@@ -1,0 +1,52 @@
+theme = tokyonight_night
+
+font-size = 14
+adjust-cell-width = 0
+adjust-cell-height = 20%
+adjust-cursor-height = 20%
+font-family = "Iosevka"
+font-style = "Regular"
+font-family-bold = "Iosevka"
+font-style-bold = "Heavy"
+font-family-italic = "Iosevka"
+font-style-italic = "Italic"
+font-family-bold-italic = "Iosevka"
+font-style-bold-italic = "Heavy Extended Italic"
+
+# Fallback for icons
+font-family = "Symbols Nerd Font"
+
+window-padding-x = 15
+window-padding-y = 15
+window-padding-balance = true
+
+cursor-style = "block"
+
+macos-option-as-alt = true
+copy-on-select = true
+
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+
+keybind = clear
+keybind = cmd+c=copy_to_clipboard
+keybind = cmd+v=paste_from_clipboard
+keybind = cmd+n=new_window
+keybind = super+backspace=text:\x15
+keybind = super+l=clear_screen
+keybind = super+equal=increase_font_size:1
+keybind = super+plus=increase_font_size:1
+keybind = super+minus=decrease_font_size:1
+keybind = super+r=reload_config
+
+adjust-underline-position=3
+adjust-underline-thickness=2
+
+window-decoration = true
+macos-titlebar-style = "hidden"
+
+shell-integration = detect
+shell-integration-features = no-title
+
+# vi: ft=toml
