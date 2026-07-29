@@ -83,6 +83,8 @@ alias gstp = git stash pop
 alias gcp = git cherry-pick
 alias gcpa = git cherry-pick --abort
 alias gcpc = git cherry-pick --continue
+alias ggpull = git pull origin (git branch --show-current)
+alias ggpush = git push origin (git branch --show-current)
 
 alias d = docker
 alias dc = docker-compose
