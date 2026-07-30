@@ -1,0 +1,18 @@
+[metadata]
+name = "mise"
+description = "Select and run mise tasks"
+requirements = [ "mise", "jq",]
+
+[source]
+command = [ "mise tasks ls --json | jq -r '.[].name'",]
+
+[preview]
+command = "mise tasks info {}"
+
+[keybindings]
+enter = "actions:run-task"
+
+[actions.run-task]
+description = "Run a mise task"
+command = "mise run {}"
+mode = "execute"
