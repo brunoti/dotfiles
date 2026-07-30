@@ -25,10 +25,10 @@ $env.config.table.show_empty = true
 $env.config.table.padding = { left: 1, right: 1 }
 
 $env.config.color_config = (tokyo-night)
-$env.CARAPACE_BRIDGES = "zsh,fish,bash,inshellisense"
 
-source ($nu.cache-dir | path join "carapace.nu")
 source ~/.local/share/atuin/init.nu
+# OMP init must follow Atuin because it resets $env.config; init loads Carapace.
+source ($nu.default-config-dir | path join "omp" "init.nu")
 source ($nu.default-config-dir | path join "aliases.nu")
 source ($nu.default-config-dir | path join "workmux.nu")
 source ($nu.default-config-dir | path join "commands.nu")

@@ -1,0 +1,5 @@
+name: omp
+description: Oh My Pi coding agent
+parsing: disabled
+completion:
+  positionalany: ["$carapace.bridge.Zsh([omp])"]
