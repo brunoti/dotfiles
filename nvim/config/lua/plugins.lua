@@ -2654,6 +2654,10 @@ local function setup()
 			cmd = { "Abolish", "S", "Subvert" },
 		},
 		{
+			"tpope/vim-obsession",
+			lazy = false,
+		},
+		{
 			"j-hui/fidget.nvim",
 			lazy = true,
 		},

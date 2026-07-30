@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+agent_session_dir() {
+  printf '%s/tmux-agents/%s/%s\n' "${XDG_STATE_HOME:-$HOME/.local/state}" "$1" "$2"
+}
+mode=${1-}
+public_invocation=0
+
+case "$mode" in
+  supervise|active|resume|restore-supervise|restore-active)
+    agent=${2-}
+    slot=${3-}
+    shift 3
+    ;;
+  *)
+    if [[ -z ${TMUX:-} ]]; then
+      printf '%s\n' 'tmux-agent: must run inside tmux' >&2
+      exit 1
+    fi
+
+    agent=${1-}
+    if (( $# > 0 )); then
+      shift
+    fi
+    public_invocation=1
+    ;;
+esac
+
+case "$agent" in
+  omp|pi)
+    if ! command -v "$agent" >/dev/null 2>&1; then
+      printf 'tmux-agent: executable not found: %s\n' "$agent" >&2
+      exit 1
+    fi
+    ;;
+  *)
+    printf 'tmux-agent: unsupported agent: %s\n' "$agent" >&2
+    exit 1
+    ;;
+esac
+
+if (( public_invocation )); then
+  slot=$(/usr/bin/uuidgen | tr '[:upper:]' '[:lower:]')
+  exec tmux-agent supervise "$agent" "$slot" "$@"
+fi
+
+session_dir="$(agent_session_dir "$agent" "$slot")"
+
+case "$mode" in
+  supervise)
+    tmux-agent active "$agent" "$slot" "$@"
+    ;;
+  active)
+    mkdir -p "$session_dir"
+    "$agent" --session-dir "$session_dir" "$@"
+    ;;
+  resume)
+    exec tmux-agent restore-supervise "$agent" "$slot"
+    ;;
+  restore-supervise)
+    tmux-agent restore-active "$agent" "$slot"
+    ;;
+  restore-active)
+    "$agent" --session-dir "$session_dir" --continue
+    ;;
+esac

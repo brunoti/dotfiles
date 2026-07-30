@@ -178,6 +178,23 @@ set-option -g @prefix_highlight_output_prefix ''
 set-option -g @prefix_highlight_output_suffix ''
 set-option -g @prefix_highlight_prefix_prompt 'LOCKED'
 
+set-option -g @resurrect-processes '\
+  "~tmux-agent supervise->tmux-agent resume *" \
+  "~tmux-agent active->tmux-agent resume *" \
+  "~tmux-agent restore-supervise" \
+  "~tmux-agent restore-active" \
+  "~omp *(--continue|--resume(=| ))" \
+  "~omp *$->omp --continue" \
+  "~pi *(--continue|--session(=| )|--session-id(=| ))" \
+  "~pi *$->pi --continue" \
+  "~(^|/)node( |$)" \
+  "~(^|/)npm( |$)" \
+  "~(^|/)pnpm( |$)" \
+  "~(^|/)bun( |$)" \
+  "~(^|/)just( |$)" \
+  "~(^|/)mise( |$)" \
+'
+set-option -g @resurrect-strategy-nvim 'session'
 # tmux-continuum.
 set-option -g @continuum-restore 'on'
 set-option -g @continuum-save-interval '10'

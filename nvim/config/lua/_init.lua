@@ -34,6 +34,19 @@ vim.opt.foldnestmax = 4
 vim.opt.statuscolumn = ""
 
 vim.loader.enable(true)
+vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
+local session_restore_group = vim.api.nvim_create_augroup("vim_session_restore", { clear = true })
+vim.api.nvim_create_autocmd("VimEnter", {
+	group = session_restore_group,
+	once = true,
+	callback = function()
+		if vim.env.TMUX ~= nil and vim.v.this_session == "" then
+			vim.cmd("Obsess")
+		end
+	end,
+})
+
 
 
 
