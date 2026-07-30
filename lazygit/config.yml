@@ -1,0 +1,72 @@
+disableStartupPopups: true
+gui:
+  border: single
+  nerdFontsVersion: "3"
+  theme:
+    activeBorderColor:
+      - "#ff9e64"
+      - "bold"
+    inactiveBorderColor:
+      - "#27a1b9"
+    searchingActiveBorderColor:
+      - "#ff9e64"
+      - "bold"
+    optionsTextColor:
+      - "#7aa2f7"
+    selectedLineBgColor:
+      - "#283457"
+    cherryPickedCommitFgColor:
+      - "#7aa2f7"
+    cherryPickedCommitBgColor:
+      - "#bb9af7"
+    markedBaseCommitFgColor:
+      - "#7aa2f7"
+    markedBaseCommitBgColor:
+      - "#e0af68"
+    unstagedChangesColor:
+      - "#db4b4b"
+    defaultFgColor:
+      - "#c0caf5"
+git:
+  pull:
+    rebase: true
+  log:
+    order: default
+  autoFetch: false
+  autoRefresh: false
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
+os:
+  editPreset: 'nvim-remote'
+  edit: "nvr {{filename}}"
+  # edit: '([ -z "$NVIM" ] && (nvim -- {{filename}})) || (nvim --server "$NVIM" --remote-send "q" && nvim --server "$NVIM" --remote {{filename}})'
+customCommands:
+  - key: "<c-u>"
+    description: Amend Options
+    context: global
+    prompts:
+      - type: menu
+        title: Choose Amend Action
+        key: amendAction
+        options:
+          - name: Add All and Amend
+            value: add_and_amend
+          - name: Just Amend
+            value: just_amend
+    command: |
+      if [[ "{{.Form.amendAction}}" == "add_and_amend" ]]; then
+        git add .
+      fi
+      git commit --amend --no-edit --no-verify
+  - key: "C"
+    description: Checkout File to Branch
+    context: files
+    prompts:
+      - type: input
+        title: Target Branch
+        key: targetBranch
+        initialValue: "{{.CheckedOutBranch.Name}}"
+        suggestions:
+          preset: branches
+    command: git checkout {{.Form.targetBranch | quote}} {{.SelectedFile.Name | quote}}
