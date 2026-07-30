@@ -27,7 +27,9 @@ $env.config.table.padding = { left: 1, right: 1 }
 $env.config.color_config = (tokyo-night)
 $env.CARAPACE_BRIDGES = "zsh,fish,bash,inshellisense"
 
-source ($nu.cache-dir | path join "carapace.nu")
 source ~/.local/share/atuin/init.nu
 source ($nu.default-config-dir | path join "aliases.nu")
+source ($nu.default-config-dir | path join "workmux.nu")
 source ($nu.default-config-dir | path join "commands.nu")
+# Carapace must load last because integrations can rebuild $env.config.
+source ($nu.cache-dir | path join "carapace.nu")

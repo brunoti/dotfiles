@@ -65,6 +65,14 @@ generate_init() {
 
 link_file "$DOTFILES_ROOT/nushell/config.nu"       "$NU_CONFIG_DIR/config.nu"
 link_file "$DOTFILES_ROOT/nushell/aliases.nu"       "$NU_CONFIG_DIR/aliases.nu"
+
+# Remove the obsolete managed workmux completion symlink if it still points at the old repo file.
+if [ -L "$NU_CONFIG_DIR/completions.nu" ] && [ "$(readlink "$NU_CONFIG_DIR/completions.nu")" = "$DOTFILES_ROOT/nushell/completions.nu" ]; then
+  rm "$NU_CONFIG_DIR/completions.nu"
+  echo "Removed obsolete symlink '$NU_CONFIG_DIR/completions.nu'"
+fi
+
+link_file "$DOTFILES_ROOT/nushell/workmux.nu"       "$NU_CONFIG_DIR/workmux.nu"
 link_file "$DOTFILES_ROOT/nushell/tokyo-night.nu"   "$NU_CONFIG_DIR/tokyo-night.nu"
 link_file "$DOTFILES_ROOT/nushell/shared-env.nu"    "$NU_CONFIG_DIR/shared-env.nu"
 
