@@ -28,4 +28,5 @@ link_file() {
   echo "Linked '$source' -> '$target'"
 }
 
-link_file "$DOTFILES_ROOT/television/cable/sesh.toml" "$HOME/.config/television/cable/sesh.toml"
+link_file "$DOTFILES_ROOT/television/config.toml" "$HOME/.config/television/config.toml"
+link_file "$DOTFILES_ROOT/television/cable" "$HOME/.config/television/cable"

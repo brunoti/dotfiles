@@ -1,0 +1,30 @@
+[metadata]
+name = "pm2"
+description = "pm2"
+requirements = [ "pm2", ""]
+
+[source]
+command = [ "pm2 jlist | jq -r \".[].name\""]
+
+[preview]
+command = "pm2 info {}"
+
+[keybindings]
+ctrl-r = "actions:restart"
+ctrl-s = "actions:stop"
+ctrl-d = "actions:delete"
+
+[actions.restart]
+description = "Restart"
+command = "pm2 restart {}"
+mode = "execute"
+
+[actions.stop]
+description = "Stop"
+command = "pm2 stop {}"
+mode = "execute"
+
+[actions.delete]
+description = "Delete"
+command = "pm2 delete {}"
+mode = "execute"
